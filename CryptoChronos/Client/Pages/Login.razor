@@ -1,0 +1,55 @@
+﻿@page "/login"
+
+@inject MetaMaskService _metaMaskService
+@inject NavigationManager _navManager
+
+@using MetaMask.Blazor
+@using MetaMask.Blazor.Enums
+@using Nethereum.Hex
+@using Nethereum.ABI
+@using Nethereum.Contracts;
+@using System.Numerics
+@using Nethereum.ABI.FunctionEncoding;
+
+@if(HasMetaMask)
+{
+    @if (!IsConnected)
+    {
+        <button class="btn btn-info" @onclick="SignInWithMetaMask">Sign In With MetaMask</button>
+    }
+}
+else
+{
+    <p class="text-body">Install the MetaMask extension to sign in with your MetaMask account</p>
+}
+
+@code {
+
+    public bool HasMetaMask { get; set; }
+    public bool IsConnected { get; set; }
+    public Chain? Chain { get; set; }
+
+
+    public delegate void LoggedInDelegate(string address);
+    public static LoggedInDelegate LoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        HasMetaMask = await _metaMaskService.HasMetaMask();
+        if (HasMetaMask)
+        {
+            await _metaMaskService.ListenToEvents();
+        }
+
+        IsConnected = await _metaMaskService.IsSiteConnected();
+    }
+
+    private async void SignInWithMetaMask()
+    {
+        await _metaMaskService.ConnectMetaMask();
+        IsConnected = true;
+        var address = await _metaMaskService.GetSelectedAddress();
+        LoggedIn(address);
+        _navManager.NavigateTo("/account");
+    }
+}

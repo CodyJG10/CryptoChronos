@@ -1,0 +1,77 @@
+﻿@page "/transfer/{TokenId}"
+
+@inject NavigationManager _navManager
+@inject NftClientService _nftClient
+@inject IConfiguration _config
+@inject IContractInteractionService _contractService
+
+@if (!_isLoading)
+{
+    <div class="form-group">
+        <input class="form-control" @bind="_toAddress" placeholder="To Address"/>
+        <button class="btn btn-primary" @onclick="() => Transfer(false)">Transfer</button>
+    </div>
+
+    @if (_showConfirmation)
+    {
+        <div class="modal show" tabindex="-1" style="display:block">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">You're about to transfer your NFT</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you would like to transfer your NFT?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" @onclick="() => Transfer(true)">Confirm Transfer</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="Cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="container" style="text-align: center;">
+        <div>
+            <h2>Waiting for transaction receipt...</h2>
+        </div>
+    </div>
+    <LoadingPage/>
+}
+
+@code {
+    [Parameter]
+    public string TokenId { get; set; }
+
+    private string _toAddress { get; set; }
+    private bool _showConfirmation = false;
+
+    private bool _isLoading = false;
+
+    private async void Transfer(bool hasConfirmed)
+    {
+        if(!hasConfirmed)
+        {
+            _showConfirmation = true;
+            StateHasChanged();
+        }
+        else
+        {
+            _isLoading = true;
+            StateHasChanged();
+            await _nftClient.NftController.TransferNft(_toAddress, TokenId, _config["NFTAddress"]);
+            _navManager.NavigateTo("/MyWatches");
+        }
+    }
+
+    private void Cancel()
+    {
+        _navManager.NavigateTo("/view/" + TokenId);
+    }
+}

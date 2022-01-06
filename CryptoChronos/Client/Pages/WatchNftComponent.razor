@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using Newtonsoft.Json
+
+@inject NavigationManager _navManager
+@inject IContractInteractionService _contractService
+
+@if(_watch != null)
+{
+        <div class="row">
+            <div class="col-md-12 mt-5">
+                <div class="card shadow card-primary" style="border-radius: 15px;">
+                    <div class="card-body text-center">
+						<img src="@_url" class="img-fluid">
+                        @{
+                            var name = _watch.Manufacturer + " " + _watch.Model;
+                        }
+                        <h1 class="card-title">@name</h1>
+                        <h2 class="text-muted card-subtitle mb-2">@("ID: " + TokenId)</h2>
+                        <h2 class="text-muted card-subtitle mb-2">@("Serial: " + _watch.Serial)</h2>
+                    </div>
+                    <div class="card-footer text-center">
+						<button class="btn btn-primary btn-lg link-light text-center" @onclick="View">VIEW</button></div>
+                </div>
+            </div>
+		</div>
+}
+@code {
+
+    [Parameter]
+    public string TokenId { get; set; }
+
+    private string _url;
+    private Watch _watch;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tokenUri = await _contractService.GetTokenUri(TokenId);
+        var watchJson = await _contractService.GetNftMetadata(tokenUri);
+        _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+        _url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+        StateHasChanged();
+    }
+
+    private void View()
+    {
+        _navManager.NavigateTo("/watch/" + TokenId);
+    }
+
+}

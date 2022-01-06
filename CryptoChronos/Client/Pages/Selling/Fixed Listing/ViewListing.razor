@@ -1,0 +1,118 @@
+﻿@page "/Listing/{ListingAddress}"
+
+@using Nethereum.Web3
+@using Microsoft.AspNetCore.Components.Forms
+@using Newtonsoft.Json
+
+@inject NavigationManager _navManager
+@inject IAuctionService _auctionService
+@inject IUserService _userService
+@inject NftClientService _client
+@inject IContractInteractionService _contract
+@inject IConfiguration _config
+
+@if(_listing != null && !_isLoading)
+{
+    if (_isOpenListing)
+    {
+        <div class="row product p-3">
+            <div class="col-md-5">
+                <img class="img-fluid" data-bss-hover-animate="pulse" src="@_imgUri"/>
+            </div>
+            <div class="col-md-7 text-primary">
+                <div class="col-md-12">
+                    <h1 class="text-primary text-center">@(_watch.Manufacturer + " " + _watch.Model)</h1>
+                        <h2>
+                        <i class="bi bi-eye-fill"></i>
+                        @(_views + " Views")
+                    </h2>
+                    @{
+                        var price = Web3.Convert.FromWei(BigInteger.Parse(_listing.Price)).ToString();
+                    }
+                    <h3 class="text-left">@("Ξ " + price)</h3>
+                    <button class="btn btn-primary active btn-block btn-lg mb-3" type="button" @onclick="Buy">Purchase</button>
+                </div>
+                    
+                <table class="table table-primary">
+                <tbody>
+                    <tr>
+                        <td>NFT ID<br></td>
+                        <td>@_listing.TokenId<br></td>
+                    </tr>
+                    <tr>
+                        <td>Seller<br></td>
+                        <td><a @onclick="ViewSeller" class="link-secondary">@_sellerName</a><br></td>
+                    </tr>
+                    <tr>
+                        <td>Contract<br></td>
+                        <td>@_config["NFTAddress"]<br></td>
+                    </tr>
+                    @foreach (var metadata in _watch.Metadata)
+                    {
+                        <tr>
+                            <td>@metadata.Key</td>
+                            <td>@metadata.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    }
+    else
+    {
+        <h3 class="text-primary text-center">This NFT has been sold!</h3>
+    }
+}
+else
+{
+    <h3 class="text-primary text-center">Please do not leave this page...</h3>
+    <LoadingPage/>
+}
+
+@code {
+
+    [Parameter]
+    public string ListingAddress { get; set; }
+
+    private FixedListing _listing;
+    private string _imgUri;
+    private Watch _watch;
+    private int _views;
+    private string _sellerName;
+
+    private bool _isOpenListing = false;
+    private bool _isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _listing = await _contract.GetListing(ListingAddress);
+        var tokenUri = await _contract.GetTokenUri(_listing.TokenId);
+        var watchJson = await _contract.GetNftMetadata(tokenUri);
+        _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+        _imgUri = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+        _views = (await _auctionService.GetAuctionMetadata(ListingAddress)).Views;
+        await _auctionService.UpdateMetadataViews(ListingAddress);
+        _sellerName = _listing.SellerAddress;
+        var sellerUser = await _userService.GetUser(_listing.SellerAddress);
+        if (sellerUser != null && sellerUser.Name != null && sellerUser.Name.Count() > 0)
+            _sellerName = sellerUser.Name;
+        _isOpenListing = (await _contract.GetListingState(ListingAddress)) == CryptoChronos.Shared.Enums.AuctionState.ACTIVE;
+        StateHasChanged();
+    }
+
+    private async void Buy()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            await _client.ListingController.Purchase(ListingAddress, _listing);
+            _navManager.NavigateTo("/MyWatches");
+        }
+        catch (Exception e) { }
+    }
+
+    private void ViewSeller() => _navManager.NavigateTo("/profile/" + _listing.SellerAddress);
+
+}

@@ -1,0 +1,228 @@
+﻿@page "/escrow/{Address}/{TokenId?}"
+
+@inject IContractInteractionService _contract
+@inject TransactionHandler _transactionHandler
+@inject NftClientService _client
+@inject IContractInteractionService _server
+@inject IJSRuntime _js
+
+<div class="container">
+   
+    <h3>Escrow</h3>
+    
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            aria-valuemin="0" 
+            aria-valuemax="6"
+            style="@_statusPercentage"
+        ></div>
+    </div>
+    <h3 class="text-center">@GetStatusText(_state)</h3>
+
+
+@if(_isSeller)
+{
+    switch(_state)
+    {
+        case EscrowStatus.NEW_ESCROW:
+                <p>You must transfer your NFT to the escrow contract</p>
+                <input @bind="TokenId" placeholder="Token ID" />
+                <button class="btn btn-primary" @onclick="DepositToken">Deposit Token</button>
+            break;
+        case EscrowStatus.NFT_DEPOSITED: 
+                <p>Waiting for the buyer to deposit ETH</p>
+                break;
+        case EscrowStatus.ETH_DEPOSITED:
+            <p>The payment has been deposited. Press the button below when you've shipped the product</p>
+            @if (!_isLoading)
+            {
+                <button class="btn btn-primary" @onclick="InitiateDelivery">Initiate Delivery</button>
+            }
+
+            else
+            {
+                <button class="btn btn-primary" disabled>Initiate Delivery</button>
+            }
+            break;
+        case EscrowStatus.DELIVERY_INITIATED:
+            <p>Waiting for the buyer to confirm the delivery</p>
+            break;
+        case EscrowStatus.DELIVERED:
+                <p>The transaction has been completed</p>
+                break;
+        }
+
+    }
+else
+{
+    switch(_state)
+    {
+        case EscrowStatus.NFT_DEPOSITED:
+            <input class="form-control" placeholder="Eth Val In Wei" @bind="_amountToSendInWei"/>
+            
+            @if(!_isLoading)
+            {
+                <button class="btn btn-primary" @onclick="DepositEth">Deposit ETH</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" disabled>Deposit ETH</button>
+            }
+
+            break;
+        case EscrowStatus.ETH_DEPOSITED:
+            <p>Waiting for the seller to ship the product</p>
+            break;
+        case EscrowStatus.NEW_ESCROW:
+            <p>Waiting for the seller to deposit their NFT into the escrow contract</p>
+            break;
+        case EscrowStatus.DELIVERY_INITIATED:
+            <p>Confirm the delivery when you've received the product</p>
+            @if(!_isLoading)
+            {
+                <button class="btn btn-primary" @onclick="ConfirmDelivery">Confirm Delivery</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" disabled>Confirm Delivery</button>
+            }
+            break;
+        case EscrowStatus.DELIVERED:
+            <p>The transaction has been completed</p>
+            break;
+    }   
+ }
+
+    @if (_isLoading)
+    {
+        <div class="modal show" style="display: block;" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Waiting...</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Waiting for transaction to be mined</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public string Address { get; set; }
+    [Parameter]
+    public string? TokenId { get; set; }
+
+    private string _statusPercentage;
+    private EscrowStatus _state;
+    private string _statusText;
+
+    private string _amountToSendInWei;
+
+    private bool _isLoading = false;
+
+    private bool _isSeller;
+
+    private EscrowContract _container;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userAddress = await _transactionHandler.GetSelectedAddress();
+        _container = await _server.GetEscrow(Address);
+        _isSeller = _container.Seller.ToLower() == userAddress.ToLower();
+        _state = await _server.GetEscrowState(Address);
+        await InitProgressBar();
+        StateUpdateMoniter();
+        StateHasChanged();
+    }
+
+    private async void DepositToken()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        await _client.NftController.ApproveForTranser(Address, TokenId);
+        await _client.EscrowController.DepositToken(Address, TokenId);
+    }
+
+    private async void DepositEth()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        var result = await _client.EscrowController.DepositEth(_amountToSendInWei, Address);
+    }
+
+    private string GetStatusText(EscrowStatus status)
+    {
+        string statusPretty = "Could Not Fetch";
+        switch(status)
+        {
+            case EscrowStatus.CANCELLED_BEFORE_DELIVERY:
+                statusPretty = "Cancelled Before Delivery";
+                break;
+            case EscrowStatus.CANCELLED_AT_NFT:
+                statusPretty = "Seller Cancelled Transaction";
+                break;
+            case EscrowStatus.DELIVERED:
+                statusPretty = "Delivered";
+                break;
+            case EscrowStatus.DELIVERY_INITIATED:
+                statusPretty = "In Shipment";
+                break;
+            case EscrowStatus.ETH_DEPOSITED:
+                statusPretty = "Payment Deposited";
+                break;
+            case EscrowStatus.NEW_ESCROW:
+                statusPretty = "Waiting For NFT";
+                break;
+            case EscrowStatus.NFT_DEPOSITED:
+                statusPretty = "Waiting For Payment";
+                break;
+        }
+        return statusPretty;
+    }
+
+    private async Task InitProgressBar()
+    {
+        var state = await _server.GetEscrowState(Address);
+        float percentage = ((float)state) / 6f * 100f;
+        _statusText = GetStatusText(state);
+        _statusPercentage = "width: " + ((int)percentage).ToString() + "%;";
+    }
+
+    private async void InitiateDelivery()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        await _client.EscrowController.InitiateDelivery(Address);
+    }
+
+    private async void ConfirmDelivery()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        await _client.EscrowController.ConfirmDelivery(Address);
+    }
+
+    private async void StateUpdateMoniter()
+    {
+        while(true)
+        {
+            var state = await _server.GetEscrowState(Address);
+            if(state != _state)
+            {
+                _state = state;
+                int stateIndex = (int)_state;
+                float percentage = ((float)(stateIndex)) / 6f * 100f;
+                _statusPercentage = "width: " + ((int)percentage).ToString() + "%;";
+                _isLoading = false;
+                StateHasChanged();
+            }
+            await Task.Delay(3000);
+        }
+    }
+}

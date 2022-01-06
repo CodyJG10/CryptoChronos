@@ -1,0 +1,162 @@
+﻿@*@page "/mint"
+@using WatchNFT.Shared.DTOs
+
+@inject NftClientService _nftClient
+@inject IContractInteractionService _contractService
+@inject NavigationManager _navManager
+@inject IUserService _userService
+
+ <div class="container" style="margin-top: 25px;">
+        <div>
+            <div class="row">
+                <div class="col-md-6" style="text-align: right;">
+                    <InputFile OnChange="@LoadFiles" class="form-control"/>
+                    <img src="@_file" style="width: 250px;">
+                    </div>
+                <div class="col-md-6">
+                    <form>
+                        <div class="input-group" style="margin-top: 25px;"><span class="input-group-text">Serial Number</span><input class="form-control" type="text"></div>
+                        <div class="input-group" style="margin-top: 25px;"><span class="input-group-text">Manufacturer&nbsp;&nbsp;</span><input class="form-control" type="text"></div>
+                        <div class="input-group" style="margin-top: 25px;"><span class="input-group-text">Model&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span><input class="form-control" type="text"></div>
+                    </form>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="background: rgba(220,220,220,0.33);margin-top: 25px;">
+            <div>
+                <div class="table-responsive" id="metadata-container" style="font-size: 25px;height: 275px;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th data-bs-toggle="tooltip" data-bss-tooltip="" title="Add any additional information you'd like here">Metadata</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-start">
+                        @foreach(var metadata in _metadata)
+                        {
+                            <MintMetadataView Metadata="metadata" OnUpdate="UpdateMetadata" OnDelete="DeleteMetadata" />
+                        }
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="text-center"><button class="btn btn-light" type="button" style="padding-right: 35px;padding-left: 35px;margin: 10px;" @onclick="AddMetadata">Add New</button></div>
+        </div>
+        <div>
+            <div class="row">
+                <div class="col" style="margin-top: 25px;margin-bottom: 25px;text-align: center;"><button class="btn btn-primary active btn-lg" type="submit" style="padding: 0px 50px;padding-top: 15px;padding-bottom: 15px;width: 400px;border-radius: 8px;" @onclick="MintWatch">Mint</button></div>
+            </div>
+        </div>
+    </div>
+
+    @inject IJSRuntime _js
+
+@code {
+
+    private string _manufacturer;
+    private string _model;
+    private string _serial;
+    private IBrowserFile _file;
+
+    private bool _isMinting = false;
+    private string _status;
+
+    private List<MintMetadata> _metadata = new List<MintMetadata>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var address = await _nftClient.TransactionHandler.GetSelectedAddress();
+        if (!await _userService.IsInRole("Owner", address) && !await _userService.IsInRole("Admin", address))
+            _navManager.NavigateTo("/Unauthorized");
+    }
+
+    private async void MintWatch()
+    {
+        List<Metadata> metadata = new List<Metadata>();
+        _metadata.ForEach(x => metadata.Add(new Metadata()
+            {
+                Key = x.Key,
+                Value = x.Value
+            }));
+
+        Watch watch = new Watch()
+        {
+                Manufacturer = _manufacturer,
+                Model = _model,
+                Serial = _serial,
+                Metadata = metadata
+        };
+        _isMinting = true;
+        _status = "Minting NFT";
+        StateHasChanged();
+        var address = await _nftClient.TransactionHandler.GetSelectedAddress();
+        MemoryStream memoryStream = new MemoryStream();
+        _file.OpenReadStream().CopyTo(memoryStream);
+        MintNftModel model = new MintNftModel()
+        {
+            UserAddress = address,
+            FileData = memoryStream.ToArray(),
+            Watch = watch
+        };
+        await _contractService.MintNft(model);
+        _status = "NFT Succesfully minted!";
+        StateHasChanged();
+        _navManager.NavigateTo("/MyWatches");
+    }
+
+
+    #region Metadata
+
+    public struct MintMetadata
+    {
+        public int Id { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
+
+    private void AddMetadata()
+    {
+        _metadata.Add(new MintMetadata() 
+        { 
+            Id = new Random().Next(),
+            Key = "",
+            Value = ""
+        });
+        StateHasChanged();
+    }
+
+    private void UpdateMetadata(int id, string key, string value)
+    {
+        var metadataIndex = _metadata.IndexOf(_metadata.Single(x => x.Id == id));
+        var metadata = _metadata[metadataIndex];
+        _metadata[metadataIndex] = new MintMetadata
+        {
+            Key = key,
+            Value = value,
+            Id = id
+        };
+        StateHasChanged();
+    }
+
+    private void DeleteMetadata(int id)
+    {
+        _metadata = _metadata.Where(x => x.Id != id).ToList();
+        StateHasChanged();
+    }
+
+    private void LoadFiles(InputFileChangeEventArgs e)
+    {
+        _file = e.File;
+        StateHasChanged();
+    }
+
+
+    #endregion
+}*@

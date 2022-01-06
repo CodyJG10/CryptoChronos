@@ -1,0 +1,36 @@
+﻿@page "/CreateEscrow"
+
+@inject NftClientService _client
+@inject IContractInteractionService _server
+@inject NavigationManager _navManager
+@inject TransactionHandler _transactionHandler
+
+<div class="container-fluid">
+    @if (!_isLoading)
+    {
+        <div class="form-group">
+            <button class="btn btn-primary" @onclick="Create">Create New Escrow Contract</button>
+        </div>
+    }
+    else
+    {
+        <h3 class="text-primary text-center">Your escrow contract is being created. Please do not leave this page. You will automatically be redirected</h3> 
+        <LoadingPage/>
+    }
+</div>
+
+
+@code {
+    private bool _isLoading = false;
+
+    private async void Create()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        var address = await _transactionHandler.GetSelectedAddress();
+        var escrowTransaction = await _client.EscrowController.DeployNewEscrow();
+        var escrowAddress = await _server.GetEscrowAddressFromTransaction(escrowTransaction, address);
+        _navManager.NavigateTo("/Escrow/" + escrowAddress);
+    }
+
+}

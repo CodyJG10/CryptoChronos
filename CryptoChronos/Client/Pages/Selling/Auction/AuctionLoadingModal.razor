@@ -1,0 +1,20 @@
+﻿@if(Show)
+{
+    <div class="modal fade show" role="dialog" style="display: inline;" tabindex="-1" id="modal-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Placing bid...</h4>
+                </div>
+                <div class="modal-body">
+                    <h3>Your bid is being processed. Please wait.</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool Show { get; set; }
+}

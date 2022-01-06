@@ -1,0 +1,126 @@
+﻿@page "/watch/{TokenId}"
+
+@inject NavigationManager _navManager
+@inject NftClientService _clientService
+@inject IContractInteractionService _contractService
+@inject IConfiguration _config
+
+@if (_watch != null)
+{
+	<div class="bg-secondary">
+		<div class="row product">
+			<div class="col-md-5 col-md-offset-0">
+				@if(_isOwner)
+				{
+					<button class="btn btn-primary btn-lg" type="button" style="margin-top: 20px;margin-bottom: 20px;" @onclick="Return">Return To Your Watches</button>
+				}
+				<img class="img-fluid" src="@_url">
+			</div>
+			<div class="col-md-7">
+				<div>
+					@{
+						var name = _watch.Manufacturer + " " + _watch.Model;
+					}
+					<h2 class="text-primary">@name</h2>
+				</div>
+				<div>
+					<table class="table">
+						<tbody>
+							<tr class="table-primary">
+								<td>Contract Address</td>
+								<td>@_config["NFTAddress"]</td>
+							</tr>
+							<tr class="table-primary">
+								<td>NFT ID</td>
+								<td>@TokenId</td>
+							</tr>
+							<tr class="table-primary">
+								<td>Serial</td>
+								<td>@_watch.Serial</td>
+							</tr>
+							<tr class="table-primary">
+								<td>Manufacturer</td>
+								<td>@_watch.Manufacturer</td>
+							</tr>
+							<tr class="table-primary">
+								<td>Model</td>
+								<td>@_watch.Model</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				@if (_watch.Metadata.Count() > 0)
+				{
+					<div class="page-header">
+						<h3>Watch Details</h3>
+					</div>
+					<table class="table">
+						<tbody>
+							@foreach (var metadata in _watch.Metadata)
+							{
+								<tr class="table-primary">
+									<td>@metadata.Key</td>
+									<td>@metadata.Value</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+					}
+				</div>
+				<div class="text-center">
+					<p class="text-primary">Options</p>
+					<div class="btn-group" role="group">
+						<button class="btn btn-primary" type="button" @onclick="ViewOnEtherscan">View On Etherscan</button>
+						@if(_isOwner)
+						{
+							<button class="btn btn-primary" type="button" @onclick="TransferButtonClicked">Transfer</button>
+							<button class="btn btn-primary" type="button" @onclick="@(() => _navManager.NavigateTo("CreateEscrow"))">Sell With Escrow Smart Contract</button>
+						}
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<LoadingPage/>
+
+}
+@code {
+
+	[Parameter]
+	public string TokenId { get; set; }
+
+	private string _url;
+	private Watch _watch;
+
+	private bool _isOwner = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var tokenUri = await _contractService.GetTokenUri(TokenId);
+		var watchJson = await _contractService.GetNftMetadata(tokenUri);
+		_watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+		_url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+		var userAddress = await _clientService.TransactionHandler.GetSelectedAddress();
+		_isOwner = (await _contractService.GetNftOwner(TokenId)).ToLower() == userAddress.ToLower();
+		StateHasChanged();
+	}
+
+	private void TransferButtonClicked()
+		=> _navManager.NavigateTo("/transfer/" + TokenId);
+
+	private void ViewOnEtherscan()
+	{
+		string nftAddress = _config["NFTAddress"];
+		string url = @"https://ropsten.etherscan.io/token/" + nftAddress + "?a=" + TokenId;
+		_navManager.NavigateTo(url);
+	}
+
+	private void Return()
+		=> _navManager.NavigateTo("/MyWatches"); 
+}

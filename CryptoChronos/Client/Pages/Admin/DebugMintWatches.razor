@@ -1,0 +1,74 @@
+﻿@page "/Seed"
+
+@using System.Net
+@inject IContractInteractionService _server
+@inject TransactionHandler _transcationHandler
+
+<div class="container d-flex">
+    <button class="btn btn-primary m-5 flex-fill" @onclick="Execute">Execute</button>
+</div>
+
+@code {
+    private async void Execute()
+    {
+        //var request = new HttpRequestMessage(HttpMethod.Get, "https:imgur.com/4XHTBLq");
+        //request.SetBrowserRequestMode(BrowserRequestMode.NoCors);  
+        //request.SetBrowserRequestCache(BrowserRequestCache.NoStore);           
+        //using (var httpClient = new HttpClient())
+        //{
+        //    var response = await httpClient.SendAsync(request);
+        //    var successful = response.IsSuccessStatusCode;
+        //    var test = await response.Content.ReadAsStringAsync();
+        //    var content = await response.Content.ReadAsByteArrayAsync();
+        //    Console.WriteLine(content);
+        //}
+
+        var address = await _transcationHandler.GetSelectedAddress();
+        var imageUrls = new Dictionary<string, string>()
+        {
+            {"Audemars", "https://imgur.com/4XHTBLq"},
+            {"Blancpain", "https://imgur.com/5HWxtiP"},
+            {"Frederique", "https://imgur.com/jIz2JVX"},
+            {"HarryWinston", "https://imgur.com/yKYM6qD"},
+            {"Omega", "https://imgur.com/PcXfYnH"},
+            {"Piaget", "https://imgur.com/xlawPpv"},
+            {"Tudor", "https://imgur.com/F61EvBq"},
+            {"Zenith", "https://imgur.com/6hdTyxe"}
+        };
+
+        var imageBytes = new Dictionary<string, byte[]>();
+
+        using (var httpClient = new HttpClient())
+        {
+            foreach (KeyValuePair<string, string> kvp in imageUrls)
+            {
+                string name = kvp.Key;
+                string url = kvp.Value;
+
+                imageBytes[name] = await httpClient.GetByteArrayAsync(url);
+            }
+        }
+
+        MintNftModel[] model = new MintNftModel[]
+        {
+            new MintNftModel()
+            {
+                UserAddress = address,
+                FileData =  imageBytes["Tudor"],
+                Watch = new Watch()
+                {
+                    Manufacturer = "Tudor",
+                    Model = "Heritage",
+                    Serial = "abc123",
+                    Metadata = new List<Metadata>(),
+                    ImageCID = ""
+                },
+                RoyaltyAmount = "1000",
+                RoyaltyRecipient = address
+            }
+        };
+
+        await _server.MintNft(model[0]);
+    }
+
+}

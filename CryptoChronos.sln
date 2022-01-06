@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NFT.ContractInteraction.Client", "NFT.ContractInteraction\NFT.ContractInteraction.Client\NFT.ContractInteraction.Client.csproj", "{06B1636E-04FC-472F-9FF5-C2C32D02B744}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NFT.ContractInteraction.Server", "NFT.ContractInteraction\NFT.ContractInteraction.Server\NFT.ContractInteraction.Server.csproj", "{8AD8FA32-2AD2-4FE2-84AD-9DD34FEC6671}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoChronos.Client", "CryptoChronos\Client\CryptoChronos.Client.csproj", "{36265ED1-44BE-45E8-8E90-872B23A0A9DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoChronos.Server", "CryptoChronos\Server\CryptoChronos.Server.csproj", "{FC2B9E5C-275C-4522-B22A-A43E8C321E9B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoChronos.Shared", "CryptoChronos\Shared\CryptoChronos.Shared.csproj", "{0AE98E2C-FE2E-4812-8740-7F29CE72112D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06B1636E-04FC-472F-9FF5-C2C32D02B744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B1636E-04FC-472F-9FF5-C2C32D02B744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B1636E-04FC-472F-9FF5-C2C32D02B744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06B1636E-04FC-472F-9FF5-C2C32D02B744}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AD8FA32-2AD2-4FE2-84AD-9DD34FEC6671}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AD8FA32-2AD2-4FE2-84AD-9DD34FEC6671}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AD8FA32-2AD2-4FE2-84AD-9DD34FEC6671}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AD8FA32-2AD2-4FE2-84AD-9DD34FEC6671}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36265ED1-44BE-45E8-8E90-872B23A0A9DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36265ED1-44BE-45E8-8E90-872B23A0A9DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36265ED1-44BE-45E8-8E90-872B23A0A9DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36265ED1-44BE-45E8-8E90-872B23A0A9DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC2B9E5C-275C-4522-B22A-A43E8C321E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC2B9E5C-275C-4522-B22A-A43E8C321E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC2B9E5C-275C-4522-B22A-A43E8C321E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC2B9E5C-275C-4522-B22A-A43E8C321E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AE98E2C-FE2E-4812-8740-7F29CE72112D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AE98E2C-FE2E-4812-8740-7F29CE72112D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AE98E2C-FE2E-4812-8740-7F29CE72112D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AE98E2C-FE2E-4812-8740-7F29CE72112D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {50440287-5734-42E2-9069-89812993D625}
+	EndGlobalSection
+EndGlobal

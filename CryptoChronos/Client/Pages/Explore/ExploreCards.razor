@@ -1,0 +1,44 @@
+﻿@using static CryptoChronos.Client.Util.ShopUtils
+
+@inject NavigationManager _navManager
+@inject IContractInteractionService _server
+@inject IUserService _userService
+@inject IJSRuntime _js
+
+@if (!_isLoading)
+{
+    <div class="container"> 
+        <div class="row row-cols-1 row-cols-md-3">
+            @foreach (var container in items)
+            {
+                <div class="col mb-4 d-flex align-items-stretch">
+                     <div class="card m-1 flex-grow-1" @onclick="@(() => _navManager.NavigateTo(container.Link))">
+                        <img class="card-img-top w-100 d-block" src="@container.WatchImageUri">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">@container.Title</h4>
+                        </div>
+                        <div class="card-footer d-flex">
+                            <a class="btn btn-primary flex-fill justify-content-center" href="@container.Link">VIEW</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <LoadingPage/>
+}
+
+@code {
+    private List<TrendingSale> items = new List<TrendingSale>();
+    private bool _isLoading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        items = await ShopUtils.GetItemsAsync(_server, _userService);
+        _isLoading = false;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,192 @@
+﻿@page "/Search"
+@page "/Search/{Query}"
+
+@inject IContractInteractionService _contract
+@inject NftClientService _client
+@inject IUserService _userService
+@inject IAuctionService _auctionService
+@inject NavigationManager _navManager
+
+@if (!_loading)
+{
+    <div class="container">
+
+        <div class="input-group" style="margin-top: 15px;height: 50px;">
+            <span class="input-group-text">Explore More</span>
+            <input class="form-control" type="text" placeholder="Search For NFTs, Creators, Listings, Etc." @bind="Query">
+            <button class="btn btn-primary" type="button" @onclick="SearchForResults">Search</button>
+        </div>
+
+        @if (_userResults.Count > 0)
+        {
+            <div class="row">
+                <h3 class="text-primary">Users</h3>
+                @foreach (var user in _userResults)
+                {
+                    <div class="card" style="width: 18rem;">
+                        @if (user.ProfilePictureUri != null)
+                        {
+                            <img class="card-img-top" src="@user.ProfilePictureUri">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@user.Address</h5>
+                            @if (user.Name != null && user.Name.Count() > 0)
+                            {
+                                <p class="card-text">@user.Name</p>
+                            }
+                        </div>
+                        <div class="card-footer d-flex">
+                            <a href="@("Profile/" + user.Address)" class="btn btn-primary flex-fill">View</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (_auctionResults.Count > 0)
+        {
+            <div class="row">
+                <h3 class="text-primary">Auctions</h3>
+                @foreach (var auction in _auctionResults)
+                {
+                    <div class="card shadow">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted card-subtitle mb-2 text-secondary">@auction.SellerAddress</h6>
+                            <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/auction/" + auction.Address))">View</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (_listingResults.Count > 0)
+        {
+            <div class="row">
+                <h3 class="text-primary">Listings</h3>
+                @foreach (var listing in _listingResults)
+                {
+                    <div class="card shadow nft-container">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted card-subtitle mb-2 text-secondary">@listing.SellerAddress</h6>
+                            <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/listing/" + listing.Address))">View</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (_tokenResults.Count > 0)
+        {
+            <div class="row">
+                <h3 class="text-primary">Tokens</h3>
+                @foreach (var token in _tokenResults)
+                {
+                    <WatchNftComponent TokenId="@token"/>
+                }
+            </div>
+        }
+
+    </div>
+}
+else
+{
+    <LoadingPage/>
+}
+
+@code {
+    [Parameter]
+    public string Query { get; set; }
+
+    private List<User> _userResults = new List<User>();
+    private List<Auction> _auctionResults = new List<Auction>();
+    private List<FixedListing> _listingResults = new List<FixedListing>();
+    private List<string> _tokenResults = new List<string>();
+
+    private bool _loading = false;
+
+    protected override void OnInitialized()
+    {
+        if (Query != null && Query.Count() > 0)
+            SearchForResults();
+    }
+
+    private async void SearchForResults()
+    {
+        _loading = true;
+        StateHasChanged();
+
+        _userResults.Clear();
+        _auctionResults.Clear();
+        _listingResults.Clear();
+        _tokenResults.Clear();
+
+        // NFT Ids
+        var allUsers = await _userService.GetAllUsers();
+        var allAuctions = await _contract.GetAllAuctions();
+        var allListings = await _contract.GetAllListings();
+        var allNfts = await _contract.GetAllNfts();
+
+        // Users
+        var usersMatchingAddress = allUsers.Where(x => x.Address.ToLower() == Query.ToLower());
+        var usersMatchingName = allUsers.Where(x => x.Name.ToLower().Contains(Query.ToLower()));
+        _userResults.AddRange(usersMatchingAddress.ToList());
+        _userResults.AddRange(usersMatchingName.ToList());
+        _loading = false;
+        StateHasChanged();
+
+        // Auctions
+        var auctionsMatchingAddress = allAuctions.Where(x => x.Address.ToLower() == Query.ToLower());
+        var auctionsMatchingName = allAuctions.Where(x => 
+            {
+                var sellerAddress = x.SellerAddress;
+                var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
+                return sellerUser.Name.ToLower() == Query.ToLower();
+            });
+        var auctionsMatchingSellerAddress = allAuctions.Where(x => x.SellerAddress.ToLower() == Query.ToLower());
+        var auctionsMatchingToken = allAuctions.Where(x => x.TokenId.ToLower() == Query.ToLower());
+        _auctionResults.AddRange(auctionsMatchingAddress.ToList());
+        _auctionResults.AddRange(auctionsMatchingName.ToList());
+        _auctionResults.AddRange(auctionsMatchingToken.ToList());
+        _auctionResults.AddRange(auctionsMatchingSellerAddress.ToList());
+        StateHasChanged();
+
+        // Listings
+        var listingsMatchingAddress = allListings.Where(x => x.Address.ToLower() == Query.ToLower());
+        var listingsMatchingName = allListings.Where(x => 
+            {
+                var sellerAddress = x.SellerAddress;
+                var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
+                return sellerUser.Name.ToLower() == Query.ToLower();
+            });
+        var listingsMatchingToken = allListings.Where(x => x.TokenId.ToLower() == Query.ToLower());
+        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress.ToLower() == Query.ToLower()); 
+        _listingResults.AddRange(listingsMatchingAddress.ToList());
+        _listingResults.AddRange(listingsMatchingName.ToList());
+        _listingResults.AddRange(listingsMatchingToken.ToList());
+        _listingResults.AddRange(listingsMatchingSellerAddress.ToList());
+        StateHasChanged();
+
+        // Nfts
+        List<string> tokensMatchingId = allNfts.Where(x => x.ToLower() == Query.ToLower()).ToList();
+        // NFT Serial Numbers
+        foreach(var nft in allNfts)
+        {
+            var tokenUri = await _contract.GetTokenUri(nft);
+            var watchJson = await _contract.GetNftMetadata(tokenUri);
+            var watchModel = JsonConvert.DeserializeObject<Watch>(watchJson);
+            if (watchModel.Serial.ToLower() == Query.ToLower())
+                _tokenResults.Add(nft);
+
+        }
+        _tokenResults.AddRange(tokensMatchingId.ToList());
+
+        StateHasChanged();
+    }
+
+}

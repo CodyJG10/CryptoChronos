@@ -1,0 +1,161 @@
+﻿@page "/Mint"
+
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager NavManager
+@inject NftClientService _client
+@inject IContractInteractionService _contract
+
+<style>
+    .list-group {
+        max-height: 300px;
+        margin-bottom: 10px;
+        overflow:scroll;
+        -webkit-overflow-scrolling: touch;
+}
+</style>
+
+<div class="container">
+    <div class="form-group">
+        <label>Serial Number</label>
+        <input type="text" class="form-control" placeholder="Enter Serial #" @bind="Serial"/>
+    </div>
+    <div class="form-group">
+        <label>Manufacturer</label>
+        <input type="text" class="form-control" placeholder="Enter Manufacturer" @bind="Manufacturer" />
+    </div>
+    <div class="form-group">
+        <label>Model</label>
+        <input type="text" class="form-control" placeholder="Enter Model" @bind="Model"/>
+    </div>
+       <div class="form-group">
+        <label>Recipient</label>
+        <input type="text" class="form-control" placeholder="Enter Recipient Address" @bind="UserAddress"/>
+    </div>
+    <div class="form-group">
+        <label>Royalty Recipient</label>
+        <input type="text" class="form-control" placeholder="Enter Royalty Recipient Address" @bind="RoyaltyRecipient"/>
+    </div>
+    <div class="form-group">
+        <label>Royalty Amount (In thousands. 1000 = 10%)</label>
+        <input type="text" class="form-control" placeholder="Enter Royalty amount" @bind="RoyaltyAmount"/>
+    </div>
+    <div class="form-group">
+        <label>Image</label>
+        <InputFile OnChange="@LoadFiles" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Additional Info</label>
+        <div class="container bg-grey list-group">
+            <ul>
+                @foreach(var metadata in AllMetadata)
+                {
+                    <NFTMetadata Metadata="metadata" OnDelete="DeleteMetadata"></NFTMetadata>
+                }
+            </ul>
+        </div>
+        <button @onclick="AddMetadata" class="btn btn-secondary">New Metadata Entry</button>
+    </div>
+
+    <button @onclick="MintWatch" class="btn btn-primary">Mint</button>
+</div>
+
+@if (IsMinting)
+{
+    <div class="modal show" style="display:block;" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Minting NFT....</h5>
+                    <button type="button" class="close" aria-label="Close" @onclick="CloseModal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>@Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code{
+    public List<string> NFTs = new List<string>();
+    public List<string> URIs = new List<string>();
+    public bool IsMinting { get; set; } = false;
+    public string Status { get; set; } = "Executing...";
+
+    public string Manufacturer { get; set; }
+    public string Model { get; set; } 
+    public string Serial { get; set; }
+    public string RoyaltyAmount { get; set; }
+    public string RoyaltyRecipient { get; set; }
+    public string UserAddress {  get; set; }
+
+    public List<Metadata> AllMetadata = new List<Metadata>();
+
+    private IBrowserFile _file;
+
+    public struct MintMetadata
+    {
+        public int Id { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
+
+    private async void MintWatch()
+    {
+        Watch watch = new Watch()
+        {
+            Manufacturer = Manufacturer,
+            Model = Model,
+            Serial = Serial,
+            Metadata = AllMetadata,
+            ImageCID = ""
+        };
+        IsMinting = true;
+        Status = "Minting NFT";
+        StateHasChanged();
+
+        var address = await _client.TransactionHandler.GetSelectedAddress();
+        if (UserAddress == null || UserAddress == "")
+            address = UserAddress;
+
+        var stream = _file.OpenReadStream(51200000);
+        MemoryStream memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+
+        MintNftModel model = new MintNftModel()
+        {
+            UserAddress = address,
+            FileData = memoryStream.ToArray(),
+            Watch = watch,
+            RoyaltyAmount = RoyaltyAmount,
+            RoyaltyRecipient = RoyaltyRecipient
+        };
+        await _contract.MintNft(model);
+        Status = "NFT Succesfully minted!";
+        StateHasChanged();
+        NavManager.NavigateTo("/MyWatches");
+    }
+
+    private void AddMetadata()
+    {
+        AllMetadata.Add(new Metadata());
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        NavManager.NavigateTo("/NFTs");
+    }
+
+    private void DeleteMetadata(Metadata metadata)
+    {
+        AllMetadata = AllMetadata.Where(x => x.Key != metadata.Key).ToList();
+        StateHasChanged();
+    }
+
+    private void LoadFiles(InputFileChangeEventArgs e) => _file = e.File;
+}

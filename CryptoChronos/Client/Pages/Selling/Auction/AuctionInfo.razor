@@ -1,0 +1,101 @@
+﻿@using Nethereum.Web3
+
+@inject IUserService _userService
+@inject NavigationManager _navManager
+
+@if (State == AuctionState.ACTIVE)
+{
+    <div class="row">
+        @if (HighestBidder != "0x0000000000000000000000000000000000000000")
+        {
+            <div class="col-md-12">
+                <a @onclick="ViewHighestBidder" class="link-primary">@("Highest Bidder: " + _highestBidderName)</a>
+            </div>
+            @if (HighestBid != null)
+            {
+                <div class="col-md-12">
+                    <h6>Highest Bid<strong>@("Ξ " + Web3.Convert.FromWei(BigInteger.Parse(HighestBid)).ToString())</strong><br></h6>
+                </div>
+            }
+            @if(UserCurrentBid != null && UserCurrentBid != "0")
+            {
+                <div class="col-md-12">
+                    <h6>Your Bid<strong>@("Ξ " + Web3.Convert.FromWei(BigInteger.Parse(UserCurrentBid)).ToString())</strong><br></h6>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-md-12">
+                <h6>Be the first to bid!</h6>
+            </div>
+        }
+        <div class="col-md-12">
+            <h6>Minimum Bid<strong>@("Ξ " + Web3.Convert.FromWei(BigInteger.Parse(Auction.BidIncrease)).ToString())</strong><br></h6>
+        </div>
+        <div>
+            @if (!IsSeller || !IsOperator)
+            {
+                <div class="col-md-12" style="margin-bottom: 15px;">
+                    <button class="btn btn-primary active btn-block btn-lg" type="button" style="margin-top: 15px;" @onclick="@(() => ShowBidModal())">Bid</button>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-12" style="margin-bottom: 15px;">
+                    <button class="btn btn-primary active btn-block btn-lg" type="button" style="margin-top: 15px;" @onclick="@(() => Withdraw())">Conclude Auction</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-md-12" style="margin-bottom: 15px;">
+        <p>This auction has concluded</p>
+        <button class="btn btn-primary active btn-block btn-lg" type="button" style="margin-top: 15px;" @onclick="@(() => Withdraw())">Withdraw</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Auction Auction { get; set; }
+    [Parameter]
+    public bool IsSeller { get; set; }
+    [Parameter]
+    public bool IsOperator { get; set; }
+    [Parameter]
+    public bool SellerAddress { get; set; }
+    [Parameter]
+    public string BidAmount { get; set; }
+    [Parameter]
+    public string HighestBid { get; set; }
+    [Parameter]
+    public string HighestBidder { get; set; }
+    [Parameter]
+    public string UserCurrentBid { get; set; }
+    [Parameter]
+    public AuctionState State { get; set; }
+    [Parameter]
+    public Action Withdraw { get; set; }
+    [Parameter]
+    public Action ShowBidModal { get; set; }
+
+    private string _highestBidderName;
+    private string _sellerName;
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (HighestBidder == null)
+            return;
+        _highestBidderName = HighestBidder;
+        var highestBidderUser = await _userService.GetUser(HighestBidder);
+        if(highestBidderUser != null && highestBidderUser.Name != null && highestBidderUser.Name.Count() > 0)
+            _highestBidderName = highestBidderUser.Name;
+
+        StateHasChanged();
+    }
+
+    private void ViewHighestBidder() => _navManager.NavigateTo("/profile/" + HighestBidder);
+
+}

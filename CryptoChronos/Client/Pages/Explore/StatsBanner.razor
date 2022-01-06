@@ -1,0 +1,73 @@
+﻿@inject IUserService _userService
+@inject IContractInteractionService _server
+
+@if (!_isLoading)
+{
+    <div class="m-t-2 m-b-2">
+        <h3 class="text-primary text-center">Platform Stats</h3>
+        <div class="row">
+
+            <div class="col-md-4 p-3">
+                <div class="card">
+                    <div class="card-title text-center">
+                        <h3>
+                            <i class="bi bi-person-fill"></i>
+                        </h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="card-text">
+                            @(_users + " Users")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 p-3">
+                <div class="card">
+                    <div class="card-title text-center">
+                        <h3>
+                            <i class="bi bi-watch"></i>
+                        </h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="card-text">
+                            @(_watches + " Watches")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 p-3">
+                <div class="card">
+                    <div class="card-title text-center">
+                        <h3>
+                            <i class="bi bi-receipt"></i>
+                        </h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="card-text">
+                            @(_sales + " Sales")
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+
+    private int _sales;
+    private int _watches;
+    private int _users;
+
+    private bool _isLoading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _sales = (await _server.GetAllListings()).Count + (await _server.GetAllAuctions()).Count;
+        _users = (await _userService.GetAllUsers()).Count();
+        _watches = (await _server.GetAllNfts()).Count;
+        _isLoading = false;
+        StateHasChanged();
+    }
+}

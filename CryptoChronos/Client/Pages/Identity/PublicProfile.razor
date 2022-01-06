@@ -1,0 +1,62 @@
+﻿@page "/Profile/{UserAddress}"
+
+@inject IUserService _userService
+@inject NftClientService _client
+@inject IContractInteractionService _contract
+
+@if(!_isLoading)
+{
+<div class="container bg-secondary">
+    <div class="row" style="text-align: center;margin-top: 10px;">
+        
+        <div class="card-group d-flex justify-content-center">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    @if (_user.ProfilePictureUri != null)
+                    {
+                        <img class="card-img-top" src="@_user.ProfilePictureUri">
+                    }
+                    <h5 class="card-title">@UserAddress</h5>
+                    @if (_user.Name != null && _user.Name.Count() > 0)
+                    {
+                        <p class="card-text">@_user.Name</p>
+                    }
+                </div>
+            </div>
+        </div>
+        @if (AllNFTs.Count > 0)
+        {
+            for (int i = 0; i < AllNFTs.Count; i++)
+            {
+                var tokenId = AllNFTs[i];
+                <WatchNftComponent TokenId="@tokenId"></WatchNftComponent>
+            }
+        }
+        else
+        {
+            <NoResults/>
+        }
+    </div>
+</div>
+}
+else
+{
+    <LoadingPage/>
+}
+@code {
+    [Parameter]
+    public string UserAddress { get; set; }
+
+    public List<string>  AllNFTs = new List<string>();
+    private bool _isLoading = true;
+    private User _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllNFTs = await _contract.GetAllNfts(UserAddress);
+        _isLoading = false;
+        _user = await _userService.GetUser(UserAddress);
+        _isLoading = false;
+        StateHasChanged();
+    }
+}

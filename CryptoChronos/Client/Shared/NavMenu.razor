@@ -1,0 +1,130 @@
+﻿@using MetaMask.Blazor
+
+@inject IUserService _userService
+@inject NftClientService _client
+@inject MetaMaskService _metaMaskService
+@inject IUserService _userService
+@inject NavigationManager _navManager
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="/images/logo_white_trans.png" width="150"/>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                     <li class="nav-item">
+                    <a class="nav-link" href="Explore" Match="NavLinkMatch.All">Explore</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="MyWatches">My Watches</a>
+                </li>
+
+                 @if (_isAdmin)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="Mint">Mint</a>
+                    </li>
+                }
+                @if(_isOwner)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="CreateAuction">Create Auction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="CreateListing">Create Listing</a>
+                    </li>
+                }
+                    <li class="nav-item">
+                         <div class="input-group align-items-stretch flex-grow-1">
+                            <input class="form-control" type="text" placeholder="Search For NFTs, Creators, Listings, Etc." @bind="_query">
+                            <button class="btn btn-secondary" type="button" @onclick="SearchForResults">Search</button>
+                        </div>
+                    </li>
+                </ul>
+
+                 @if (!_isSignedIn)
+                {
+                    <button class="btn btn-secondary" @onclick="ConnectWallet">
+                        <span class="oi oi-person" aria-hidden="true"></span>
+                        @_address
+                    </button>
+                }
+                else
+                {
+                    <a class="btn btn-secondary" href="Account">
+                        <span class="oi oi-person" aria-hidden="true"></span>
+                        @_address
+                    </a>
+                }
+            </div>
+        </div>
+    </nav>
+
+@code {
+    private string _address { get; set; } = "Connect Wallet";
+    private bool _hasMetamask = false;
+    private bool _isLoading = true;
+    private bool _isSignedIn = false;
+    private bool _isAdmin = false;
+    private bool _isOwner = false;
+
+    private string _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userAddress = await _client.TransactionHandler.GetSelectedAddress();
+        _isAdmin = await _userService.IsInRole("ADMIN", userAddress);
+        _isOwner = await _userService.IsInRole("OWNER", userAddress);
+        UpdateData();
+    }
+
+    private async void UpdateData()
+    {
+        _isLoading = true;
+        if (await _metaMaskService.HasMetaMask())
+        {
+            MetaMaskService.AccountChangedEvent += AccountChanged;
+            if (await _metaMaskService.IsSiteConnected())
+            {
+                _isSignedIn = true;
+                var address = await _metaMaskService.GetSelectedAddress();
+                if (await _userService.GetUser(address) == null || (await _userService.GetUser(address)).Name == "")
+                {
+                    _address = address.Substring(0, 5) + "...";
+                }
+                else
+                {
+                    var user = await _userService.GetUser(address);
+                    _address = user.Name;
+                }
+            }
+            _hasMetamask = true;
+        }
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task AccountChanged(string arg)
+    {
+        _address = await _metaMaskService.GetSelectedAddress();
+        StateHasChanged();
+    }
+
+    private async void ConnectWallet()
+    {
+        await _metaMaskService.ConnectMetaMask();
+        _isSignedIn = true;
+        var address = await _metaMaskService.GetSelectedAddress();
+        StateHasChanged();  
+        _navManager.NavigateTo("/account");
+    }
+
+    private void SearchForResults()
+       => _navManager.NavigateTo("Search/" + _query);
+}

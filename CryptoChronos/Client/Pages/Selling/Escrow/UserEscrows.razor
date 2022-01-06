@@ -1,0 +1,56 @@
+﻿@page "/MyEscrow"
+
+@using static CryptoChronos.Client.Util.ShopUtils
+
+@inject NavigationManager _navManager
+@inject IContractInteractionService _server
+@inject IUserService _userService
+@inject IJSRuntime _js
+@inject TransactionHandler _transactionHandler
+
+@if (!_isLoading)
+{
+    if (items.Count > 0)
+    {
+        <div class="container">
+            <h3 class="text-primary text-center">Your Escrows</h3>
+            <div class="row row-cols-1 row-cols-md-3">
+                @foreach (var container in items)
+                {
+                    <div class="col mb-4 d-flex align-items-stretch">
+                        <div class="card m-1 flex-grow-1" @onclick="@(() => _navManager.NavigateTo(container.Link))">
+                            <img class="card-img-top w-100 d-block" src="@("http://cloudflare-ipfs.com/ipfs/" + container.Watch.ImageCID)">
+                            <div class="card-body text-center">
+                                <h4 class="card-title">@(container.Watch.Manufacturer + " " + container.Watch.Model)</h4>
+                            </div>
+                            <div class="card-footer d-flex">
+                                <a class="btn btn-primary flex-fill justify-content-center" href="@container.Link">VIEW</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <NoResults Text="You don't have any escrows"/>
+    }
+}
+else
+{
+    <LoadingPage/>
+}
+
+@code {
+    private List<EscrowContract> items = new List<EscrowContract>();
+    private bool _isLoading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var userAddress = await _transactionHandler.GetSelectedAddress();
+        items = await ShopUtils.GetAllEscrowsForUser(userAddress, _server);
+        _isLoading = false;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,67 @@
+﻿<li>
+    <div class="card">
+        <div class="card-header">
+            <h3>Info</h3>
+        </div>
+        <div class="card-body">
+               
+            <div class="form-group">
+                <label>Key</label>
+                <input type="text" class="form-control" placeholder="Enter Key" @bind="Key"/>
+            </div>
+
+                <div class="form-group">
+                <label>Value</label>
+                <input type="text" class="form-control" placeholder="Enter Value" @bind="Value"/>
+            </div>
+
+            <button class="btn btn-danger" @onclick="Delete">Remove</button>
+        </div>
+    </div>
+</li>
+
+@code {
+    private string _key;
+    public string Key
+    {
+        get
+        {
+            return _key;
+        }
+        set
+        {
+            _key = value;
+            Update();
+        }
+    }
+    private string _value;
+    public string Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            _value = value;
+            Update();
+        }
+    }
+
+    private void Update()
+    {
+        Metadata.Key = Key;
+        Metadata.Value = Value;
+    }
+
+    private void Delete()
+    {
+        OnDelete.InvokeAsync(Metadata);
+    }
+
+    [Parameter]
+    public Metadata Metadata { get; set; }
+    [Parameter]
+    public EventCallback<Metadata> OnDelete { get; set;}
+
+}

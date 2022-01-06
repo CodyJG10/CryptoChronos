@@ -1,0 +1,244 @@
+﻿@page "/Auction/{AuctionAddress}"
+
+@using Nethereum.Util
+@using Nethereum.Web3
+@using Nethereum.Web3.Accounts
+@using Microsoft.AspNetCore.Components.Forms
+@using Newtonsoft.Json
+
+@inject NftClientService _client
+@inject IContractInteractionService _contract
+@inject IAuctionService _auctionService
+@inject NavigationManager _navManager
+@inject IJSRuntime _js
+@inject IAuctionService _auctionService
+@inject IUserService _userService
+@inject IConfiguration _config
+
+@if (_showBidModal)
+{
+    <div class="modal fade show" role="dialog" style="display: inline;" tabindex="-1" id="modal-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="CloseBidModal"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title">Place Bid</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                         <input class="form-control" type="text" @bind="_bidAmount">
+                        <div class="input-group-btn"><button class="btn btn-default" type="button" @onclick="Bid">Bid</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<AuctionLoadingModal Show="_showLoadingModal"/>
+
+@if (_auction != null)
+{
+    <div class="bg-secondary p-3">
+        <div class="row text-primary">
+            <div class="col-md-5">
+                <img class="img-fluid" src="@_imgUri">
+            </div>
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-12">
+                        @{
+                            string title = _watch.Manufacturer + " " + _watch.Model;
+                        }
+                        <h2>@title</h2>
+                    </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2>
+                                <i class="bi bi-eye-fill"></i>
+                                @(_views + " Views")
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <AuctionInfo Auction="_auction" BidAmount="@_bidAmount" UserCurrentBid="@_currentBid"
+                    HighestBid="@_highestBid" HighestBidder="@_highestBidder" IsOperator="@_isOperator"
+                    IsSeller="@_isSeller" ShowBidModal="ShowBidModal"
+                    State="@_state" Withdraw="Withdraw" />
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div data-aos="fade" data-aos-delay="1100">
+                            <table class="table table-primary">
+                                <caption>NFT Details</caption>
+                                <tbody>
+                                    <tr>
+                                        <td>NFT ID<br></td>
+                                        <td>@_auction.TokenId<br></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Seller<br></td>
+                                        <td><a @onclick="ViewSeller" class="text-primary">@_sellerName</a><br></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contract<br></td>
+                                        <td>@_config["NFTAddress"]<br></td>
+                                    </tr>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table-primary">
+                    <tbody>
+                        @foreach (var metadata in _watch.Metadata)
+                        {
+                            <tr>
+                                <td>@metadata.Key</td>
+                                <td>@metadata.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <LoadingPage/>
+}
+@code {
+
+    [Parameter]
+    public string AuctionAddress { get; set; }
+
+    private string _imgUri;
+    private Watch _watch;
+
+    private Auction _auction;
+    private bool _isSeller = false;
+    private bool _isOperator = false;
+    private bool _isHighestBidder = false;
+    private string _highestBid;
+    private string _highestBidder;
+    private int _views;
+    private string _sellerAddress;
+    private string _sellerName;
+    private string _currentBid;
+
+    private string _bidAmount;
+    private bool _showBidModal = false;
+    private bool _showLoadingModal = false;
+
+    private AuctionState _state;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _auction = await _contract.GetAuction(AuctionAddress);
+        var bidIncrease = _auction.BidIncrease;
+        _state = await _contract.GetAuctionState(AuctionAddress);
+        await _auctionService.UpdateMetadataViews(AuctionAddress);
+        var _tokenId = _auction.TokenId;
+        var tokenUri = await _contract.GetTokenUri(_tokenId);
+        var watchJson = await _contract.GetNftMetadata(tokenUri);
+        _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+        _imgUri = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+        _auction = await _contract.GetAuction(AuctionAddress);
+        _sellerName = _auction.SellerAddress;
+        var sellerUser = await _userService.GetUser(_auction.SellerAddress);
+        if (sellerUser != null && sellerUser.Name != null && sellerUser.Name.Count() > 0)
+            _sellerName = sellerUser.Name;
+        UpdateDisplayData();
+        StateHasChanged();
+        StartStateUpdateMoniter();
+    }
+
+    private async void UpdateDisplayData()
+    {
+         _highestBid = await _contract.GetHighestBid(AuctionAddress);
+        _highestBidder = await _contract.GetHighestBidder(AuctionAddress);
+        _views = (await _auctionService.GetAuctionMetadata(AuctionAddress)).Views;
+
+        if (await _client.TransactionHandler.IsSiteConnected())
+        {
+            var userAddress = await _client.TransactionHandler.GetSelectedAddress();
+            _isSeller  = _auction.SellerAddress.ToLower() == userAddress.ToLower();
+            _isOperator = _auction.OperatorAddress.ToLower() == userAddress.ToLower();
+           
+            _isHighestBidder = _highestBidder.ToLower() == userAddress.ToLower();
+
+            SetCurrentBidForUser();
+        }
+        StateHasChanged();
+    }
+
+    private async void Bid()
+    {
+        _showLoadingModal = true;
+        _showBidModal = false;
+        StateHasChanged();
+        string bidAmount;
+        if (_bidAmount == null || _bidAmount == "0")
+            bidAmount = _auction.BidIncrease;
+        else
+            bidAmount = UnitConversion.Convert.ToWei(_bidAmount).ToString();
+
+        try
+        {
+            await _client.AuctionController.PlaceBid(bidAmount, AuctionAddress);
+        }
+        catch (Exception) { }
+        _showLoadingModal = false;
+        UpdateDisplayData();
+        StateHasChanged();
+    }
+
+    private async void Withdraw() => await _client.AuctionController.Withdraw(AuctionAddress);
+
+    private async void StartStateUpdateMoniter()
+    {
+        while(true)
+        {
+            var state = await _contract.GetAuctionState(AuctionAddress);
+            if(state != _state)
+            {
+                _state = state;
+                int stateIndex = (int)_state;
+                StateHasChanged();
+            }
+            await Task.Delay(15000);
+        }
+    }
+
+    private async void SetCurrentBidForUser()
+    {
+        var address = await _client.TransactionHandler.GetSelectedAddress();
+        _currentBid = await _contract.GetBidForUser(AuctionAddress, address);
+        BigInteger minimumBidAmount;
+        var highestBid = BigInteger.Parse(_highestBid);
+    }
+
+    private void ShowBidModal()
+    {
+        _showBidModal = true;
+        _bidAmount = (Web3.Convert.FromWei(BigInteger.Parse(_auction.BidIncrease))).ToString();
+        _currentBid = _auction.BidIncrease;
+        StateHasChanged();
+    }
+
+    private void CloseBidModal()
+    {
+        _showBidModal = false;
+        StateHasChanged();
+    }
+
+    private void ViewSeller() => _navManager.NavigateTo("/profile/" + _auction.SellerAddress);
+
+}

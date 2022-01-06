@@ -1,0 +1,58 @@
+﻿@page "/promote"
+
+@inject NftClientService _client
+@inject IUserService _userService
+@inject NavigationManager _navManager
+
+@if(_showSuccessModal)
+{
+    <div class="modal show" style="display: block;" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Succesfully promoted user</h5>
+          </div>
+          <div class="modal-body">
+            <p>@(_userAddress + " is now an admin!")</p>
+          </div>
+        </div>
+      </div>
+    </div>
+}
+
+<div class="container">
+    <div class="input-group">
+        <input placeholder="User Address" @bind="_userAddress" class="form-control"/>
+        <button class="btn btn-primary" @onclick="Promote">Promote</button>
+    </div>
+</div>
+
+@code {
+
+    private string _userAddress;
+    private bool _showSuccessModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(await _client.TransactionHandler.IsSiteConnected())
+        {
+            var currentUser = await _client.TransactionHandler.GetSelectedAddress();
+            if (!await _userService.IsInRole("ADMIN", currentUser))
+                _navManager.NavigateTo("/");
+        }
+    }
+
+    private async void Promote()
+    {
+        var model = new AddUserToRoleModel()
+        {
+            RoleName = "ADMIN",
+            UserAddress = _userAddress
+        };
+        await _userService.AddUserToRole(model);
+        _showSuccessModal = true;
+        StateHasChanged();
+
+    }
+
+}
