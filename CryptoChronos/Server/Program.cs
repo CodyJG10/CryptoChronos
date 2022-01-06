@@ -37,6 +37,8 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.AddQueueServiceClient(builder.Configuration["ConnectionStrings:storage_connection_string:queue"], preferMsi: true);
 });
 
+builder.Services.AddSingleton<EmailSender>(new EmailSender(builder.Configuration["SendGrid_Key"]));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
