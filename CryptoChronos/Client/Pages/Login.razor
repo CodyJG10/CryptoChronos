@@ -15,12 +15,27 @@
 {
     @if (!IsConnected)
     {
-        <button class="btn btn-info" @onclick="SignInWithMetaMask">Sign In With MetaMask</button>
+        <div class="row p-5">
+            <div class="col-md-3"></div>
+            <div class="col-md-6 text-primary text-center">
+                <p>Please connect your MetaMask to continue</p>
+                <p>If the button below doesn't work, please ensure you're logged into MetaMask</p>
+                <button class="btn btn-info btn-large align-self-center" @onclick="SignInWithMetaMask">Sign In With MetaMask</button>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
     }
 }
 else
 {
-    <p class="text-body">Install the MetaMask extension to sign in with your MetaMask account</p>
+    <div class="row p-5">
+         <div class="col-md-3"></div>
+        <div class="col-md-6 text-primary text-center">
+            <h2 class="text-primary text-center">Install the MetaMask extension to sign in with your MetaMask account</h2>
+            <a href="https://metamask.io/download" class="text-center btn btn-primary">Download MetaMask</a>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
 }
 
 @code {
@@ -42,6 +57,11 @@ else
         }
 
         IsConnected = await _metaMaskService.IsSiteConnected();
+
+        if(IsConnected)
+        {
+            _navManager.NavigateTo("/account");
+        }
     }
 
     private async void SignInWithMetaMask()

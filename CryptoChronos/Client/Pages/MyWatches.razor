@@ -4,6 +4,7 @@
 
 @inject NftClientService _nftClient
 @inject IContractInteractionService _contractService
+@inject NavigationManager _navManager
 
 @if(_isLoading)
 {
@@ -34,10 +35,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var address = await _nftClient.TransactionHandler.GetSelectedAddress();
-        AllNFTs = await _contractService.GetAllNfts(address);
-        _isLoading = false;
-        StateHasChanged();
+        if (await _nftClient.TransactionHandler.IsSiteConnected())
+        {
+            var address = await _nftClient.TransactionHandler.GetSelectedAddress();
+            AllNFTs = await _contractService.GetAllNfts(address);
+            _isLoading = false;
+            StateHasChanged();
+        }
+        else
+        {
+            _navManager.NavigateTo("/login");
+        }
     }
 
 }

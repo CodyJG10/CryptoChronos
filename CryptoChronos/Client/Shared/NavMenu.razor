@@ -7,7 +7,7 @@
 @inject NavigationManager _navManager
 
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="/images/logo_white_trans.png" width="150"/>
@@ -78,10 +78,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var userAddress = await _client.TransactionHandler.GetSelectedAddress();
-        _isAdmin = await _userService.IsInRole("ADMIN", userAddress);
-        _isOwner = await _userService.IsInRole("OWNER", userAddress);
+        if(await _client.TransactionHandler.IsSiteConnected())
+        {
+            var userAddress = await _client.TransactionHandler.GetSelectedAddress();
+            _isAdmin = await _userService.IsInRole("ADMIN", userAddress);
+            _isOwner = await _userService.IsInRole("OWNER", userAddress);
+        }
         UpdateData();
+
     }
 
     private async void UpdateData()
@@ -118,11 +122,18 @@
 
     private async void ConnectWallet()
     {
-        await _metaMaskService.ConnectMetaMask();
-        _isSignedIn = true;
-        var address = await _metaMaskService.GetSelectedAddress();
-        StateHasChanged();  
-        _navManager.NavigateTo("/account");
+        if(await _metaMaskService.HasMetaMask())
+        {
+            await _metaMaskService.ConnectMetaMask();
+            _isSignedIn = true;
+            var address = await _metaMaskService.GetSelectedAddress();
+            StateHasChanged();  
+            _navManager.NavigateTo("/account");
+        }
+        else
+        {
+            _navManager.NavigateTo("login");
+        }
     }
 
     private void SearchForResults()

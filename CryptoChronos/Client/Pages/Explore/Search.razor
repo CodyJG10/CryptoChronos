@@ -126,11 +126,26 @@ else
         _listingResults.Clear();
         _tokenResults.Clear();
 
-        // NFT Ids
         var allUsers = await _userService.GetAllUsers();
         var allAuctions = await _contract.GetAllAuctions();
         var allListings = await _contract.GetAllListings();
         var allNfts = await _contract.GetAllNfts();
+
+        // Nfts
+        List<string> tokensMatchingId = allNfts.Where(x => x.ToLower() == Query.ToLower()).ToList();
+        // NFT Serial Numbers
+        foreach(var nft in allNfts)
+        {
+            var tokenUri = await _contract.GetTokenUri(nft);
+            var watchJson = await _contract.GetNftMetadata(tokenUri);
+            var watchModel = JsonConvert.DeserializeObject<Watch>(watchJson);
+            if (watchModel.Serial.ToLower() == Query.ToLower())
+                _tokenResults.Add(nft);
+
+        }
+        _tokenResults.AddRange(tokensMatchingId.ToList());
+
+        StateHasChanged();
 
         // Users
         var usersMatchingAddress = allUsers.Where(x => x.Address.ToLower() == Query.ToLower());
@@ -170,22 +185,6 @@ else
         _listingResults.AddRange(listingsMatchingName.ToList());
         _listingResults.AddRange(listingsMatchingToken.ToList());
         _listingResults.AddRange(listingsMatchingSellerAddress.ToList());
-        StateHasChanged();
-
-        // Nfts
-        List<string> tokensMatchingId = allNfts.Where(x => x.ToLower() == Query.ToLower()).ToList();
-        // NFT Serial Numbers
-        foreach(var nft in allNfts)
-        {
-            var tokenUri = await _contract.GetTokenUri(nft);
-            var watchJson = await _contract.GetNftMetadata(tokenUri);
-            var watchModel = JsonConvert.DeserializeObject<Watch>(watchJson);
-            if (watchModel.Serial.ToLower() == Query.ToLower())
-                _tokenResults.Add(nft);
-
-        }
-        _tokenResults.AddRange(tokensMatchingId.ToList());
-
         StateHasChanged();
     }
 
