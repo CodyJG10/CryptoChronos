@@ -72,8 +72,8 @@ namespace CryptoChronos.Shared.Services
         public async Task<List<string>> GetAllNfts(string owner)
             => await _httpClient.GetFromJsonAsync<List<string>>("nfts/" + owner);
 
-        public async Task<List<string>> GetAllNfts()
-            => await _httpClient.GetFromJsonAsync<List<string>>("nfts");
+        public async Task<List<LocalWatchRecord>> GetAllNfts()
+            => await _httpClient.GetFromJsonAsync<List<LocalWatchRecord>>("nfts");
 
         public async Task<AuctionState> GetListingState(string listingAddress)
             => await _httpClient.GetFromJsonAsync<AuctionState>("ListingState?address=" + listingAddress);

@@ -1,6 +1,8 @@
 ﻿@page "/Search"
 @page "/Search/{Query}"
 
+@using System.Linq 
+
 @inject IContractInteractionService _contract
 @inject NftClientService _client
 @inject IUserService _userService
@@ -132,15 +134,18 @@ else
         var allNfts = await _contract.GetAllNfts();
 
         // Nfts
-        List<string> tokensMatchingId = allNfts.Where(x => x.ToLower() == Query.ToLower()).ToList();
+        @*List<string> tokensMatchingId = allNfts.Where(x => x.NftId.ToLower() == Query.ToLower()).ToList();*@
+        var tokensMatchingId = (from x in allNfts
+                                where x.NftId.ToLower() == Query.ToLower()
+                                select x.NftId);
         // NFT Serial Numbers
         foreach(var nft in allNfts)
         {
-            var tokenUri = await _contract.GetTokenUri(nft);
+            var tokenUri = await _contract.GetTokenUri(nft.NftId);
             var watchJson = await _contract.GetNftMetadata(tokenUri);
             var watchModel = JsonConvert.DeserializeObject<Watch>(watchJson);
             if (watchModel.Serial.ToLower() == Query.ToLower())
-                _tokenResults.Add(nft);
+                _tokenResults.Add(nft.NftId);
 
         }
         _tokenResults.AddRange(tokensMatchingId.ToList());
@@ -157,12 +162,12 @@ else
 
         // Auctions
         var auctionsMatchingAddress = allAuctions.Where(x => x.Address.ToLower() == Query.ToLower());
-        var auctionsMatchingName = allAuctions.Where(x => 
-            {
-                var sellerAddress = x.SellerAddress;
-                var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
-                return sellerUser.Name.ToLower() == Query.ToLower();
-            });
+        var auctionsMatchingName = allAuctions.Where(x =>
+        {
+            var sellerAddress = x.SellerAddress;
+            var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
+            return sellerUser.Name.ToLower() == Query.ToLower();
+        });
         var auctionsMatchingSellerAddress = allAuctions.Where(x => x.SellerAddress.ToLower() == Query.ToLower());
         var auctionsMatchingToken = allAuctions.Where(x => x.TokenId.ToLower() == Query.ToLower());
         _auctionResults.AddRange(auctionsMatchingAddress.ToList());
@@ -173,14 +178,14 @@ else
 
         // Listings
         var listingsMatchingAddress = allListings.Where(x => x.Address.ToLower() == Query.ToLower());
-        var listingsMatchingName = allListings.Where(x => 
-            {
-                var sellerAddress = x.SellerAddress;
-                var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
-                return sellerUser.Name.ToLower() == Query.ToLower();
-            });
+        var listingsMatchingName = allListings.Where(x =>
+        {
+            var sellerAddress = x.SellerAddress;
+            var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
+            return sellerUser.Name.ToLower() == Query.ToLower();
+        });
         var listingsMatchingToken = allListings.Where(x => x.TokenId.ToLower() == Query.ToLower());
-        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress.ToLower() == Query.ToLower()); 
+        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress.ToLower() == Query.ToLower());
         _listingResults.AddRange(listingsMatchingAddress.ToList());
         _listingResults.AddRange(listingsMatchingName.ToList());
         _listingResults.AddRange(listingsMatchingToken.ToList());

@@ -1,4 +1,5 @@
 ﻿using CryptoChronos.Shared.DTOs;
+using CryptoChronos.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WatchNFT.Server.Controllers
@@ -12,8 +13,8 @@ namespace WatchNFT.Server.Controllers
             return result;
         }
         [HttpGet("nfts")]
-        public async Task<List<string>> GetAllNfts()
-            => await _nftService.NftController.GetAllNfts();
+        public List<LocalWatchRecord> GetAllNfts()
+            => _context.LocalWatchRecords.ToList();
         [HttpGet("TokenUri")]
         public async Task<string> GetTokenUri(string tokenId)
         {
@@ -22,7 +23,19 @@ namespace WatchNFT.Server.Controllers
         }
         [HttpPost("MintNft")]
         public async Task<string> MintNft(MintNftModel model)
-            => await _nftService.NftController.MintNft(model);
+        {
+            var tokenId = await _nftService.NftController.MintNft(model);
+            LocalWatchRecord watchRecord = new LocalWatchRecord()
+            {
+                Model = model.Watch.Model,
+                Manufacturer = model.Watch.Manufacturer,
+                NftId = tokenId,
+                Serial = model.Watch.Serial,
+                ImageCID = model.Watch.ImageCID
+            };
+            _context.Add(watchRecord);
+            return tokenId;
+        }
         [HttpGet("OwnerOf")]
         public async Task<string> GetNftOwner(string tokenId)
             => await _nftService.NftController.GetNftOwner(tokenId);
