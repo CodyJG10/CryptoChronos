@@ -4,6 +4,9 @@ using System.Numerics;
 
 namespace NFT.ContractInteraction.Server
 {
+    /**
+     *  Stores information about Web3
+     */
     public class NethereumClient
     {
         public Web3 Web3 { get; private set; }

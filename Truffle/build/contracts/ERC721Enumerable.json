@@ -8512,7 +8512,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-12-29T05:39:06.202Z",
+  "updatedAt": "2022-01-08T02:41:15.978Z",
   "devdoc": {
     "details": "This implements an optional extension of {ERC721} defined in the EIP that adds enumerability of all the token ids in the contract as well as all token ids owned by each account.",
     "kind": "dev",

@@ -10,13 +10,10 @@ namespace NFT.ContractInteraction.Server
 
         private PinataClient _client;
 
-        private NethereumClient _nethereum;
-
-        public StorageHelper(string apiKey, string apiSecret, NethereumClient nethereum)
+        public StorageHelper(string apiKey, string apiSecret)
         {
             this.apiKey = apiKey;
             this.apiSecret = apiSecret;
-            _nethereum = nethereum;
             Connect();
         }
 
@@ -30,7 +27,7 @@ namespace NFT.ContractInteraction.Server
             _client = new PinataClient(config);
         }
 
-        public async Task<string> StoreNewNFT(byte[] fileData, Watch watch, string tokenId)
+        public async Task<string[]> StoreNewNFT(byte[] fileData, Watch watch, string tokenId)
         {
             var imageId = await PinImage(fileData);
             watch.ImageCID = imageId;
@@ -39,7 +36,7 @@ namespace NFT.ContractInteraction.Server
                 Name = tokenId,
             };
             var result = await _client.Pinning.PinJsonToIpfsAsync(watch, meta);
-            return result.IpfsHash;
+            return new string[] { result.IpfsHash, imageId };
         }
 
         private async Task<string> PinImage(byte[] fileData)

@@ -6,11 +6,11 @@ namespace CryptoChronos.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuctionsController : ControllerBase
+    public class ListingsController : ControllerBase
     {
         private ApplicationDbContext _context;
 
-        public AuctionsController(ApplicationDbContext context)
+        public ListingsController(ApplicationDbContext context)
         {
             _context = context;
         }

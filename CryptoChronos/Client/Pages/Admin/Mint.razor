@@ -126,7 +126,7 @@
         MemoryStream memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream);
 
-        MintNftModel model = new MintNftModel()
+        MintWatchModel model = new MintWatchModel()
         {
             UserAddress = address,
             FileData = memoryStream.ToArray(),

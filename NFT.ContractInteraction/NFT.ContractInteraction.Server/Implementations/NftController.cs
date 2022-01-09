@@ -31,7 +31,7 @@ namespace NFT.ContractInteraction.Server.Implementations
             return ids;
         }
 
-        public async Task<List<string>> GetAllNfts()
+        public async Task<List<string>> GetAllNftsFromWeb3()
         {
             List<string> ids = new List<string>();
             WatchNFTService nftService = new WatchNFTService(_client.Web3, _client.NftAddress);
@@ -51,13 +51,19 @@ namespace NFT.ContractInteraction.Server.Implementations
             return uri;
         }
 
-        public async Task<string> MintNft(MintNftModel model)
+        public async Task<MintWatchReceipt> MintNft(MintWatchModel model)
         {
             WatchNFTService nftService = new WatchNFTService(_client.Web3, _client.NftAddress);
             var tokenId = new BigInteger(new Random().Next());
-            var ipfsHash = await _storage.StoreNewNFT(model.FileData, model.Watch, tokenId.ToString());
+            var ipfsData = await _storage.StoreNewNFT(model.FileData, model.Watch, tokenId.ToString());
+            string ipfsHash = ipfsData[0];
+            string ipfsImageCID = ipfsData[1];
             await nftService.SafeMintAndSetUriRequestAsync(model.UserAddress, tokenId, ipfsHash, BigInteger.Parse(model.RoyaltyAmount), model.RoyaltyRecipient);
-            return tokenId.ToString();
+            return new MintWatchReceipt()
+            {
+                TokenId = tokenId.ToString(),
+                ImageCID = ipfsImageCID
+            };
         }
 
         public async Task<string> GetNftOwner(string tokenId)

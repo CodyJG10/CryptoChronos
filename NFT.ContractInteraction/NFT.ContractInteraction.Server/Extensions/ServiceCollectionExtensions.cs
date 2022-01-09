@@ -17,7 +17,7 @@ namespace NFT.ContractInteraction.Server.Extensions
             services.AddTransient<IListingController, ListingsController>();
             services.AddTransient<IAuctionController, AuctionController>();
             services.AddTransient<IEscrowController, EscrowController>();
-            services.AddTransient(x => new StorageHelper(pinataApiKey, pinataApiSecret, client));
+            services.AddTransient(x => new StorageHelper(pinataApiKey, pinataApiSecret));
             services.AddTransient<NftServerService>();
         }
     }

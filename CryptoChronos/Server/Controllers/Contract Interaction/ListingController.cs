@@ -9,10 +9,25 @@ namespace WatchNFT.Server.Controllers
     {
         [HttpPost("CreateListing")]
         public async Task<string> CreateListing(CreateListingModel model)
-            => await _nftService.ListingController.CreateListing(model.Price, model.TokenId, model.PayTo);
+        {
+            var address = await _nftService.ListingController.CreateListing(model.Price, model.TokenId, model.PayTo);
+            var record = new LocalListingRecord()
+            {
+                ImageCID = model.Watch.ImageCID,
+                ListingAddress = address,
+                IsActive = true,
+                ListingType = ListingType.FIXED,
+                SellerAddress = model.SellerAddress,
+                TokenId = model.TokenId,
+            };
+            _context.Add(record);
+            _context.SaveChanges();
+            return address;
+        }
+
         [HttpGet("Listings")]
-        public async Task<List<FixedListing>> GetAllListings()
-            => await _nftService.ListingController.GetAllListings();
+        public List<LocalListingRecord> GetAllListings()
+            => _context.LocalListingRecords.Where(x => x.ListingType == ListingType.FIXED).Where(x => x.IsActive == true).ToList();
         [HttpGet("Listings/{sellerAddress}")]
         public async Task<List<FixedListing>> GetAllListings(string sellerAddress)
             => await _nftService.ListingController.GetAllListings(sellerAddress);

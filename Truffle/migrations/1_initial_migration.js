@@ -7,6 +7,6 @@ const auctionFactory = artifacts.require("AuctionFactory");
 module.exports = function (deployer) {
   // deployer.deploy(escrowManager);
   deployer.deploy(nft);
-  deployer.deploy(listingFactory);
-  deployer.deploy(auctionFactory);
+  // deployer.deploy(listingFactory);
+  // deployer.deploy(auctionFactory);
 };

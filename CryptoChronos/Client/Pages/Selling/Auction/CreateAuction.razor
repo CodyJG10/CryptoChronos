@@ -3,7 +3,7 @@
 @inject NavigationManager _navManager
 @inject NftClientService _client
 @inject IContractInteractionService _contract
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject IUserService _userService
 
 
@@ -56,12 +56,16 @@
         _loading = true;
         StateHasChanged();
         var operatorAddress = await _client.TransactionHandler.GetSelectedAddress();
+        var tokenUri = await _contract.GetTokenUri(_tokenId);
+        var watch = JsonConvert.DeserializeObject<Watch>(await _contract.GetNftMetadata(tokenUri));
         CreateAuctionModel model = new CreateAuctionModel()
         {
             BidIncrement = _bidIncrease,
             OperatorAddress = operatorAddress,
             PayTo = _payTo,
-            TokenId = _tokenId
+            TokenId = _tokenId,
+            SellerAddress = _payTo,
+            Watch = watch
         };
         var address = await _contract.CreateAuction(model);
         AuctionMetadata metadata = new AuctionMetadata()

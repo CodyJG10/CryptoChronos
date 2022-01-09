@@ -1,4 +1,5 @@
-﻿using CryptoChronos.Shared.DTOs;
+﻿using CryptoChronos.Server.Data;
+using CryptoChronos.Shared.DTOs;
 using CryptoChronos.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using NFT.ContractInteraction.Server;
@@ -10,10 +11,12 @@ namespace CryptoChronos.Server.Controllers
     public class DebugController : Controller
     {
         private NftServerService _nftService;
+        private ApplicationDbContext _context;
 
-        public DebugController(NftServerService nftService)
+        public DebugController(NftServerService nftService, ApplicationDbContext context)
         {
             _nftService = nftService;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -48,10 +51,11 @@ namespace CryptoChronos.Server.Controllers
 
                 imageBytes[name] = await System.IO.File.ReadAllBytesAsync("wwwroot/images/" + uri);
             }
+            var mintReceipts = new Dictionary<MintWatchReceipt, MintWatchModel>();
 
-            new MintNftModel[]
+            new MintWatchModel[]
             {
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Audemars"],
@@ -66,7 +70,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Blancpain"],
@@ -88,7 +92,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Frederique"],
@@ -120,7 +124,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["HarryWinston"],
@@ -147,7 +151,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Omega"],
@@ -189,7 +193,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Piaget"],
@@ -211,7 +215,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Tudor"],
@@ -253,7 +257,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Zenith"],
@@ -285,7 +289,7 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyAmount = "1000",
                     RoyaltyRecipient = address
                 },
-                new MintNftModel()
+                new MintWatchModel()
                 {
                     UserAddress = address,
                     FileData =  imageBytes["Longiness"],
@@ -323,10 +327,26 @@ namespace CryptoChronos.Server.Controllers
                     RoyaltyRecipient = address
                 }
 
-            }.ToList().ForEach(async x =>
+            }.ToList().ForEach(x =>
             {
-                await _nftService.NftController.MintNft(x);
+                var receipt = _nftService.NftController.MintNft(x).GetAwaiter().GetResult();
+                mintReceipts.Add(receipt, x);
             });
+
+            foreach(var receipt in mintReceipts.Keys)
+            {
+                var x = mintReceipts[receipt];
+                LocalWatchRecord watchRecord = new LocalWatchRecord()
+                {
+                    Model = x.Watch.Model,
+                    Manufacturer = x.Watch.Manufacturer,
+                    NftId = receipt.TokenId,
+                    Serial = x.Watch.Serial,
+                    ImageCID = receipt.ImageCID
+                };
+                _context.LocalWatchRecords.Add(watchRecord);
+                _context.SaveChanges();
+            }
 
             return Ok();
         }

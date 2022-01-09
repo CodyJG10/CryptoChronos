@@ -5,7 +5,7 @@
 @using Newtonsoft.Json
 
 @inject NavigationManager _navManager
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject IUserService _userService
 @inject NftClientService _client
 @inject IContractInteractionService _contract
@@ -46,6 +46,14 @@
                     <tr>
                         <td>Contract<br></td>
                         <td>@_config["NFTAddress"]<br></td>
+                    </tr>
+                    <tr>
+                        <td>Manufacturer</td>
+                        <td>@_watch.Manufacturer</td>
+                    </tr>
+                    <tr>
+                        <td>Model</td>
+                        <td>@_watch.Model</td>
                     </tr>
                     @foreach (var metadata in _watch.Metadata)
                     {
@@ -105,12 +113,9 @@ else
     {
         _isLoading = true;
         StateHasChanged();
-        try
-        {
-            await _client.ListingController.Purchase(ListingAddress, _listing);
-            _navManager.NavigateTo("/MyWatches");
-        }
-        catch (Exception e) { }
+        await _client.ListingController.Purchase(ListingAddress, _listing);
+        await _auctionService.CloseFixedListing(_listing);
+        _navManager.NavigateTo("/MyWatches");
     }
 
     private void ViewSeller() => _navManager.NavigateTo("/profile/" + _listing.SellerAddress);

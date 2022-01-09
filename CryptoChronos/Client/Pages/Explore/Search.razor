@@ -6,7 +6,7 @@
 @inject IContractInteractionService _contract
 @inject NftClientService _client
 @inject IUserService _userService
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject NavigationManager _navManager
 
 @if (!_loading)
@@ -57,7 +57,7 @@
                             <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
                         </div>
                         <div class="card-footer text-center">
-                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/auction/" + auction.Address))">View</button>
+                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/auction/" + auction.ListingAddress))">View</button>
                         </div>
                     </div>
                 }
@@ -76,7 +76,7 @@
                             <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
                         </div>
                         <div class="card-footer text-center">
-                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/listing/" + listing.Address))">View</button>
+                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/listing/" + listing.ListingAddress))">View</button>
                         </div>
                     </div>
                 }
@@ -89,7 +89,7 @@
                 <h3 class="text-primary">Tokens</h3>
                 @foreach (var token in _tokenResults)
                 {
-                    <WatchNftComponent TokenId="@token"/>
+                    <WatchNftComponent TokenId="@token.NftId"/>
                 }
             </div>
         }
@@ -106,9 +106,9 @@ else
     public string Query { get; set; }
 
     private List<User> _userResults = new List<User>();
-    private List<Auction> _auctionResults = new List<Auction>();
-    private List<FixedListing> _listingResults = new List<FixedListing>();
-    private List<string> _tokenResults = new List<string>();
+    private List<LocalListingRecord> _auctionResults = new List<LocalListingRecord>();
+    private List<LocalListingRecord> _listingResults = new List<LocalListingRecord>();
+    private List<LocalWatchRecord> _tokenResults = new List<LocalWatchRecord>();
 
     private bool _loading = false;
 
@@ -135,20 +135,16 @@ else
 
         // Nfts
         @*List<string> tokensMatchingId = allNfts.Where(x => x.NftId.ToLower() == Query.ToLower()).ToList();*@
-        var tokensMatchingId = (from x in allNfts
+        _tokenResults.AddRange(from x in allNfts
                                 where x.NftId.ToLower() == Query.ToLower()
-                                select x.NftId);
+                                select x);
         // NFT Serial Numbers
         foreach(var nft in allNfts)
         {
-            var tokenUri = await _contract.GetTokenUri(nft.NftId);
-            var watchJson = await _contract.GetNftMetadata(tokenUri);
-            var watchModel = JsonConvert.DeserializeObject<Watch>(watchJson);
-            if (watchModel.Serial.ToLower() == Query.ToLower())
-                _tokenResults.Add(nft.NftId);
+            if (nft.Serial.ToLower() == Query.ToLower())
+                _tokenResults.Add(nft);
 
         }
-        _tokenResults.AddRange(tokensMatchingId.ToList());
 
         StateHasChanged();
 
@@ -161,7 +157,7 @@ else
         StateHasChanged();
 
         // Auctions
-        var auctionsMatchingAddress = allAuctions.Where(x => x.Address.ToLower() == Query.ToLower());
+        var auctionsMatchingAddress = allAuctions.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
         var auctionsMatchingName = allAuctions.Where(x =>
         {
             var sellerAddress = x.SellerAddress;
@@ -177,7 +173,7 @@ else
         StateHasChanged();
 
         // Listings
-        var listingsMatchingAddress = allListings.Where(x => x.Address.ToLower() == Query.ToLower());
+        var listingsMatchingAddress = allListings.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
         var listingsMatchingName = allListings.Where(x =>
         {
             var sellerAddress = x.SellerAddress;

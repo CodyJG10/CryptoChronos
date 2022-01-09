@@ -21,26 +21,25 @@ namespace CryptoChronos.Client.Util
         {
             var products = await server.GetAllProducts();
             List<TrendingSale> items = new List<TrendingSale>();
-            foreach (var product in products)
+            foreach (var listingRecord in products)
             {
-                var tokenUri = await server.GetTokenUri(product.TokenId);
+                var tokenUri = await server.GetTokenUri(listingRecord.TokenId);
                 var watchJson = await server.GetNftMetadata(tokenUri);
                 var watch = JsonConvert.DeserializeObject<Watch>(watchJson);
 
-                var sellerName = product.SellerAddress;
+                var sellerName = listingRecord.SellerAddress;
                 var user = await userService.GetUser(sellerName);
                 if (user.Name != null)
                     sellerName = user.Name;
-                bool isAuction = product is Auction;
-                string link = isAuction ? "/Auction/" : "/Listing/";
+                string link = listingRecord.ListingType == ListingType.AUCTION ? "/Auction/" : "/Listing/";
                 AuctionState state;
-                if (isAuction)
+                if (listingRecord.ListingType == ListingType.AUCTION)
                 {
-                    state = await server.GetAuctionState(product.Address);
+                    state = await server.GetAuctionState(listingRecord.ListingAddress);
                 }
                 else
                 {
-                    state = await server.GetListingState(product.Address);
+                    state = await server.GetListingState(listingRecord.ListingAddress);
                 }
 
                 if (state != AuctionState.ACTIVE)
@@ -50,7 +49,7 @@ namespace CryptoChronos.Client.Util
                 {
                     Title = watch.Manufacturer + " " + watch.Model,
                     Seller = sellerName,
-                    Link = link + product.Address,
+                    Link = link + listingRecord.ListingAddress,
                     WatchImageUri = "http://cloudflare-ipfs.com/ipfs/" + watch.ImageCID,
                     Watch = watch
                 };

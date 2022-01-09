@@ -2,7 +2,7 @@
 
 namespace CryptoChronos.Shared.DTOs
 {
-    public class MintNftModel
+    public class MintWatchModel
     {
         public byte[] FileData { get; set; }
         public string UserAddress { get; set; }

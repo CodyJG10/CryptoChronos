@@ -23,8 +23,8 @@ namespace CryptoChronos.Shared.Services
             return result;
         }
 
-        public async Task<List<Auction>> GetAllAuctions()
-            => await _httpClient.GetFromJsonAsync<List<Auction>>("Auctions");
+        public async Task<List<LocalListingRecord>> GetAllAuctions()
+            => await _httpClient.GetFromJsonAsync<List<LocalListingRecord>>("Auctions");
 
         public async Task<List<Auction>> GetAllAuctions(string sellerAddress)
             => await _httpClient.GetFromJsonAsync<List<Auction>>("Auctions/" + sellerAddress);
@@ -59,8 +59,8 @@ namespace CryptoChronos.Shared.Services
             => await _httpClient.GetFromJsonAsync<FixedListing>("listing?address=" + listingAddress);
 
 
-        public async Task<List<FixedListing>> GetAllListings()
-            => await _httpClient.GetFromJsonAsync<List<FixedListing>>("Listings");
+        public async Task<List<LocalListingRecord>> GetAllListings()
+            => await _httpClient.GetFromJsonAsync<List<LocalListingRecord>>("Listings");
 
         public async Task<List<FixedListing>> GetAllListings(string sellerAddress)
             => await _httpClient.GetFromJsonAsync<List<FixedListing>>("Listings/" + sellerAddress);
@@ -88,7 +88,7 @@ namespace CryptoChronos.Shared.Services
             var result = await _httpClient.GetStringAsync("TokenUri?tokenId=" + tokenId);
             return result;
         }
-        public async Task<string> MintNft(MintNftModel model)
+        public async Task<string> MintNft(MintWatchModel model)
         {
             var result = await _httpClient.PostAsJsonAsync("MintNft", model);
             return await result.Content.ReadAsStringAsync();
@@ -110,9 +110,9 @@ namespace CryptoChronos.Shared.Services
         public async Task<EscrowStatus> GetEscrowState(string address)
             => await _httpClient.GetFromJsonAsync<EscrowStatus>("EscrowState?address=" + address);
 
-        public async Task<List<Product>> GetAllProducts()
+        public async Task<List<LocalListingRecord>> GetAllProducts()
         {
-            List<Product> products = new List<Product>();
+            List<LocalListingRecord> products = new List<LocalListingRecord>();
             (await GetAllListings()).ForEach(x => products.Add(x));
             (await GetAllAuctions()).ForEach(x => products.Add(x));
             return products;

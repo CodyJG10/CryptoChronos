@@ -11,6 +11,8 @@ namespace CryptoChronos.Server.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRoleClaims> UserRoleClaims { get; set; }
         public DbSet<LocalWatchRecord> LocalWatchRecords { get; set; }
+        public DbSet<LocalListingRecord> LocalListingRecords { get; set; }  
+
         public ApplicationDbContext(DbContextOptions options) : base(options)
         { }
 

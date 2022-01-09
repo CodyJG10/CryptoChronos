@@ -8,10 +8,10 @@
 
 @inject NftClientService _client
 @inject IContractInteractionService _contract
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject NavigationManager _navManager
 @inject IJSRuntime _js
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject IUserService _userService
 @inject IConfiguration _config
 
@@ -84,27 +84,26 @@
                                         <td>Contract<br></td>
                                         <td>@_config["NFTAddress"]<br></td>
                                     </tr>
-                                    <tr></tr>
+                                    <tr>
+                                        <td>Manufacturer</td>
+                                        <td>@_watch.Manufacturer</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Model</td>
+                                        <td>@_watch.Model</td>
+                                    </tr>
+                                     @foreach (var metadata in _watch.Metadata)
+                                        {
+                                            <tr>
+                                                <td>@metadata.Key</td>
+                                                <td>@metadata.Value</td>
+                                            </tr>
+                                        }
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <table class="table-primary">
-                    <tbody>
-                        @foreach (var metadata in _watch.Metadata)
-                        {
-                            <tr>
-                                <td>@metadata.Key</td>
-                                <td>@metadata.Value</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -162,7 +161,7 @@ else
 
     private async void UpdateDisplayData()
     {
-         _highestBid = await _contract.GetHighestBid(AuctionAddress);
+        _highestBid = await _contract.GetHighestBid(AuctionAddress);
         _highestBidder = await _contract.GetHighestBidder(AuctionAddress);
         _views = (await _auctionService.GetAuctionMetadata(AuctionAddress)).Views;
 
@@ -171,7 +170,7 @@ else
             var userAddress = await _client.TransactionHandler.GetSelectedAddress();
             _isSeller  = _auction.SellerAddress.ToLower() == userAddress.ToLower();
             _isOperator = _auction.OperatorAddress.ToLower() == userAddress.ToLower();
-           
+
             _isHighestBidder = _highestBidder.ToLower() == userAddress.ToLower();
 
             SetCurrentBidForUser();
@@ -200,7 +199,11 @@ else
         StateHasChanged();
     }
 
-    private async void Withdraw() => await _client.AuctionController.Withdraw(AuctionAddress);
+    private async void Withdraw()
+    {
+        await _client.AuctionController.Withdraw(AuctionAddress);
+        await _auctionService.CloseAuction(_auction);
+    }
 
     private async void StartStateUpdateMoniter()
     {

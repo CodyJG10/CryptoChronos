@@ -40,7 +40,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.10;\r\n\r\n/// @title IERC2981Royalties\r\n/// @dev Interface for the ERC2981 - Token Royalty standard\r\ninterface IERC2981Royalties {\r\n    /// @notice Called with the sale price to determine how much royalty\r\n    //          is owed and to whom.\r\n    /// @param _tokenId - the NFT asset queried for royalty information\r\n    /// @param _value - the sale price of the NFT asset specified by _tokenId\r\n    /// @return _receiver - address of who should be sent the royalty payment\r\n    /// @return _royaltyAmount - the royalty payment amount for value sale price\r\n    function royaltyInfo(uint256 _tokenId, uint256 _value)\r\n        external\r\n        view\r\n        returns (address _receiver, uint256 _royaltyAmount);\r\n}",
-  "sourcePath": "D:\\MSDN Projects\\NFT Marketplace\\Truffle\\contracts\\Interfaces\\IERC2981Royalties.sol",
+  "sourcePath": "D:\\MSDN Projects\\CryptoChronos\\Truffle\\contracts\\Interfaces\\IERC2981Royalties.sol",
   "ast": {
     "absolutePath": "project:/contracts/Interfaces/IERC2981Royalties.sol",
     "exportedSymbols": {
@@ -437,7 +437,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-12-30T18:22:25.543Z",
+  "updatedAt": "2022-01-08T02:41:16.072Z",
   "devdoc": {
     "details": "Interface for the ERC2981 - Token Royalty standard",
     "kind": "dev",

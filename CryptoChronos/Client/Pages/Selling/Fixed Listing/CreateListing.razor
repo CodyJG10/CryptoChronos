@@ -4,7 +4,7 @@
 
 @inject NftClientService _client
 @inject IContractInteractionService _contract
-@inject IAuctionService _auctionService
+@inject IListingService _auctionService
 @inject IUserService _userService
 @inject NavigationManager _navManager
 
@@ -60,16 +60,16 @@
     {
         if (!await _userService.IsInRole("Owner", await _client.TransactionHandler.GetSelectedAddress()))
             _navManager.NavigateTo("/Unauthorized");
-        var address = await _client.TransactionHandler.GetSelectedAddress();
-        var nfts = await _contract.GetAllNfts(address);
-        foreach (var id in nfts)
-        {
-            var tokenUri = await _contract.GetTokenUri(id);
-            var watch = JsonConvert.DeserializeObject<Watch>(await _contract.GetNftMetadata(tokenUri));
-            string name = watch.Manufacturer + " " + watch.Model + ": " + watch.Serial;
-            _nfts.Add(name);
-        }
-        StateHasChanged();
+        //var address = await _client.TransactionHandler.GetSelectedAddress();
+        //var nfts = await _contract.GetAllNfts(address);
+        //foreach (var id in nfts)
+        //{
+        //    var tokenUri = await _contract.GetTokenUri(id);
+        //    var watch = JsonConvert.DeserializeObject<Watch>(await _contract.GetNftMetadata(tokenUri));
+        //    string name = watch.Manufacturer + " " + watch.Model + ": " + watch.Serial;
+        //    _nfts.Add(name);
+        //}
+        //StateHasChanged();
     }
 
     public async void Create()
@@ -77,13 +77,17 @@
         _loading = true;
         StateHasChanged();
         var address = await _client.TransactionHandler.GetSelectedAddress();
+        var tokenUri = await _contract.GetTokenUri(_tokenId);
+        var watch = JsonConvert.DeserializeObject<Watch>(await _contract.GetNftMetadata(tokenUri));
         CreateListingModel model = new CreateListingModel()
-            {
+        {
                 PayTo = _payTo,
                 Price = _price,
                 TokenId = _tokenId,
-                OwnerAddress = address
-            };
+                OwnerAddress = address,
+                SellerAddress = _payTo,
+                Watch = watch
+        };
         var listingAddress = await _contract.CreateListing(model);
         AuctionMetadata metadata = new AuctionMetadata()
         {

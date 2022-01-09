@@ -8,6 +8,7 @@ namespace CryptoChronos.Shared.Models
 {
     public class LocalWatchRecord
     {
+        public int Id { get; set; } 
         public string Serial { get; set; }
         public string Manufacturer { get; set; }
         public string Model { get; set; }

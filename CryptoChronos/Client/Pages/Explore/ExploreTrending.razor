@@ -2,20 +2,20 @@
 
 @inject IContractInteractionService _contract
 @inject NftClientService _client
-@inject IAuctionService _auctionDatabaseService
+@inject IListingService _auctionDatabaseService
 @inject IUserService _userDatabaseService
 @inject NavigationManager _navManager
 
 @{
-    List<List<TrendingSale>> itemsGrouped = new List<List<TrendingSale>>();
+    List<List<LocalListingRecord>> itemsGrouped = new List<List<LocalListingRecord>>();
     int iteration = 0;
     int currentIndex = 0;
-    itemsGrouped.Add(new List<TrendingSale>());
+    itemsGrouped.Add(new List<LocalListingRecord>());
     foreach(var item in _items)
     {
         if(iteration % 3 == 0)
         {
-            itemsGrouped.Add(new List<TrendingSale>());
+            itemsGrouped.Add(new List<LocalListingRecord>());
             currentIndex++;
         }
         itemsGrouped[currentIndex].Add(item);
@@ -28,20 +28,26 @@
         @foreach(var item in itemGroup)
         {
             <div class="card shadow nft-container">
-                <img class="card-img-top" src="@item.WatchImageUri" height="150">
+                <img class="card-img-top" src="@("https:ipfs.io/ipfs/" + item.ImageCID)" height="150">
                 <div class="card-body text-center">
                     <h4 class="text-primary card-title">@item.Title</h4>
-                    <h6 class="text-muted card-subtitle mb-2 text-secondary">@item.Seller</h6>
+                    <h6 class="text-muted card-subtitle mb-2 text-secondary">@item.SellerAddress</h6>
                     <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
-                    <div>
-                        <div class="d-inline-flex">
-                            <img src="ether.png" width="45">
-                            <span class="text-info d-xl-flex justify-content-xl-center text-info" style="font-size: 35px;">@item.Price</span>
-                        </div>
-                    </div>
                 </div>
                 <div class="card-footer text-center">
-                    <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo(item.Link))">View</button>
+                    @{
+                        string address;
+                        if(item.ListingType == ListingType.AUCTION)
+                        {
+                            address = "/Auction/";
+                        }
+                        else
+                        {
+                            address = "/Listing/";
+                        }
+                        address += item.ListingAddress;
+                    }
+                    <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo(address))">View</button>
                 </div>
             </div>
         }
@@ -49,125 +55,25 @@
 }
 
 @code {
-    private struct ListingViews
-    {
-        public FixedListing Listing { get; set; }
-        public int Views { get; set; }
-    }
 
-    private struct AuctionViews
-    {
-        public Auction Auction { get; set; }
-        public int Views { get; set; }
-    }
-
-    private struct TrendingSale
-    {
-        public string Title {  get; set; }
-        public string Seller { get; set;}
-        public string Link { get; set; }
-        public Watch Watch { get; set; }
-        public string WatchImageUri { get; set; }
-        public string Price { get; set; }
-    }
-
-    private List<TrendingSale> _items = new List<TrendingSale>();
+    private List<LocalListingRecord> _items = new List<LocalListingRecord>();
 
     protected override async Task OnInitializedAsync()
     {
-        var listings = await _contract.GetAllListings();
-        var listingViews = new List<ListingViews>();
+        var allProducts = await _contract.GetAllProducts();
+        Dictionary<LocalListingRecord, int> listingViews = new Dictionary<LocalListingRecord, int>();
 
-        var auctions = await _contract.GetAllAuctions();
-        var auctionViews = new List<AuctionViews>();
-
-        foreach(var listing in listings)
+        foreach(var product in allProducts)
         {
-            var views = (await _auctionDatabaseService.GetAuctionMetadata(listing.Address)).Views;
-            listingViews.Add(new ListingViews()
-                    {
-                        Listing = listing,
-                        Views = views
-                    });
+            var views = (await _auctionDatabaseService.GetAuctionMetadata(product.ListingAddress)).Views;
+            listingViews.Add(product, views);
         }
 
-        foreach(var auction in auctions)
-        {
-            try
-            {
-                var views = (await _auctionDatabaseService.GetAuctionMetadata(auction.Address)).Views;
-                auctionViews.Add(new AuctionViews()
-                    {
-                        Auction = auction,
-                        Views = views
-                    });
-            }
-            catch (Exception) { }
-        }
-
-        listingViews = (from listing in listingViews
-                        orderby listing.Views
-                        descending
-                        select listing).Take(10).ToList();
-
-        auctionViews = (from auction in auctionViews
-                        orderby auction.Views
-                        descending
-                        select auction).Take(10).ToList();
-
-        foreach(var listing in listingViews)
-        {
-            var tokenId = listing.Listing.TokenId;
-            if (tokenId == null)
-                continue;
-            var tokenUri = await _contract.GetTokenUri(tokenId);
-            var watchJson = await _contract.GetNftMetadata(tokenUri);
-            var watch = JsonConvert.DeserializeObject<Watch>(watchJson);
-            var imgUri = "https://ipfs.io/ipfs/" + watch.ImageCID;
-            string link = "/listing/" + listing.Listing.Address;
-            var address = listing.Listing.SellerAddress;
-            var user = await _userDatabaseService.GetUser(address);
-            string sellerName = user.Name ?? address;
-            TrendingSale item = new TrendingSale()
-                {
-                    Link = link,
-                    Price = Web3.Convert.FromWei(BigInteger.Parse(listing.Listing.Price)).ToString(),
-                    Seller = sellerName,
-                    Title = watch.Manufacturer + " " + watch.Model,
-                    Watch = watch,
-                    WatchImageUri = imgUri
-                };
-            _items.Add(item);
-        }
-
-        foreach(var auction in auctionViews)
-        {
-            var tokenId = auction.Auction.TokenId;
-            var tokenUri = await _contract.GetTokenUri(tokenId);
-            var watchJson = await _contract.GetNftMetadata(tokenUri);
-            var watch = JsonConvert.DeserializeObject<Watch>(watchJson);
-            var imgUri = "https://ipfs.io/ipfs/" + watch.ImageCID;
-            string link = "/auction/" + auction.Auction.Address;
-            var address = auction.Auction.SellerAddress;
-            var user = await _userDatabaseService.GetUser(address);
-            string sellerName = user.Name ?? address;
-            string currentBid = "0";
-            try
-            {
-                currentBid = await _contract.GetHighestBid(auction.Auction.Address);
-            }
-            catch (Exception) { }
-            TrendingSale item = new TrendingSale()
-                {
-                    Link = link,
-                    Price = Web3.Convert.FromWei(BigInteger.Parse(currentBid)).ToString(),
-                    Seller = sellerName,
-                    Title = watch.Manufacturer + " " + watch.Model,
-                    Watch = watch,
-                    WatchImageUri = imgUri
-                };
-            _items.Add(item);
-        }
+        _items = (from product in listingViews.Keys
+                let views = listingViews[product]
+                orderby views
+                descending
+                select product).Take(10).ToList();
 
         StateHasChanged();
     }
