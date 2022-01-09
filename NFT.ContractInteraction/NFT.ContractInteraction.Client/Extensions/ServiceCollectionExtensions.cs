@@ -10,7 +10,7 @@ namespace NFT.ContractInteraction.Client.Extensions
         public static void AddContractControllers(this IServiceCollection services)
         {
             services.AddTransient<INftController, NftController>();
-            services.AddTransient<IListingController, ListingsController>();
+            services.AddTransient<IFixedListingController, FixedListingController>();
             services.AddTransient<IAuctionController, AuctionController>();
             services.AddTransient<IEscrowController, EscrowController>();
             services.AddTransient<TransactionHandler, MetaMaskTransactionHandler>();

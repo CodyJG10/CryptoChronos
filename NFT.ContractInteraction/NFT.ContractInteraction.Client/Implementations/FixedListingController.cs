@@ -5,11 +5,11 @@ using System.Numerics;
 
 namespace NFT.ContractInteraction.Client.Implementations
 {
-    public class ListingsController : IListingController
+    public class FixedListingController : IFixedListingController
     {
         private readonly TransactionHandler _transactionHandler;
 
-        public ListingsController(TransactionHandler transactionHandler)
+        public FixedListingController(TransactionHandler transactionHandler)
         {
             _transactionHandler = transactionHandler;
         }

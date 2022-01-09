@@ -2,7 +2,7 @@
 
 namespace NFT.ContractInteraction.Client.Interfaces
 {
-    public interface IListingController
+    public interface IFixedListingController
     {
         public Task<string> Purchase(string listingAddress, FixedListing listing);
     }
