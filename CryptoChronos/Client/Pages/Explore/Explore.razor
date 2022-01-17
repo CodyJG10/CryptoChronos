@@ -2,6 +2,8 @@
 
 @inject NavigationManager _navManager
 
+<StatsBanner/>
+
 <div class="input-group" style="margin-top: 15px;height: 50px;">
     <span class="input-group-text">Explore More</span>
     <input class="form-control" type="text" placeholder="Search for anything..." @bind="_searchQuery">
@@ -9,11 +11,11 @@
 </div>
     
 <header class="header-blue">
-    <div class="container hero" style="margin-top: 5px;">
+    <div class="container hero mt-5 mb-5">
         <div class="row">
             <div class="col-12 col-lg-6 col-xl-5 offset-xl-1">
-                <h1>Patek Phillipe</h1>
-                <p>Mauris egestas tellus non ex condimentum, ac ullamcorper sapien dictum. Nam consequat neque quis sapien viverra convallis. In non tempus lorem. </p><button class="btn btn-light btn-lg action-button" type="button">Purchase Now</button>
+                <h1>Crypto Chronos - The CarFax of Watches</h1>
+                <p>The next generation of safe & secure watch authneticity verification. Leverage blockchain technology to mark ownership and authenticity of your luxory watches</p><button class="btn btn-light btn-lg action-button" type="button">Purchase Now</button>
             </div>
             <div class="col-md-5 col-lg-5 offset-lg-1 offset-xl-0 d-none d-lg-block phone-holder">
                 <img class="device" src="images/stock_watch.png">
@@ -22,9 +24,7 @@
     </div>
 </header>
 
-<StatsBanner/>
-
-<ExploreCards/>
+@*<ExploreCards/>*@
 
 @code {
     private string _searchQuery;

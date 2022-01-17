@@ -1,5 +1,66 @@
 ﻿@page "/contact"
 
+@inject EmailService _emailService
+@inject IConfiguration _config
+@inject NavigationManager _navManager
+
+<div class="row bg-light">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <div class="block-heading text-center">
+            <h2 class="text-info">Contact Us</h2>
+            <p>Send us a message regarding technical issues, interest in our services, and anything else you may need!</p>
+        </div>
+        <div>
+            <div class="mb-3"><label class="form-label" for="name">Name</label><input class="form-control" type="text" id="name" name="name" @bind="_name"></div>
+            <div class="mb-3"><label class="form-label" for="subject">Subject</label><input class="form-control" type="text" id="subject" name="subject" @bind="_subject"></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" type="email" id="email" name="email" @bind="_email"></div>
+            <div class="mb-3"><label class="form-label" for="message">Message</label><textarea class="form-control" id="message" name="message" @bind="_message"></textarea></div>
+            <div class="mb-3"><button class="btn btn-primary" type="submit" @onclick="Send">Send</button></div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</div>
+
 @code {
+
+    private string _name;
+    private string _subject;
+    private string _email;
+    private string _message;
+
+    private string _adminEmail;
+
+    protected override void OnInitialized()
+    {
+        _adminEmail = _config["AdminEmail"];
+    }
+
+    private async void Send()
+    {
+        SendEmailModel toAdminEmail = new SendEmailModel()
+            {
+                FromName = "Crypto Chronos",
+                FromEmail = "noreply@technimental.com",
+                To = _adminEmail,
+                Subject = "Contact Form Received",
+                Body = "Hello, Admin. You've received a contact form from Crypto Chronos from" + _name + " with the email " + _email + ". They're message: " + _subject + " - " + _message
+            };
+
+        SendEmailModel toUserEmail = new SendEmailModel()
+        {
+            FromName = "Crypto Chronos",
+            FromEmail = "noreply@technimental.com",
+            To = _email,
+            Subject = "Contact Form Sent",
+            Body = "Hello, " + _name + ". We're sending you this email as a courtesy to let you know we've received your email and we will get back to you as soon as possible."
+        };
+
+
+        await _emailService.SendEmail(toAdminEmail);
+        await _emailService.SendEmail(toUserEmail);
+
+        _navManager.NavigateTo("MessageSubmitted");
+    }
 
 }
