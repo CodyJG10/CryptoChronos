@@ -58,6 +58,8 @@
         var operatorAddress = await _client.TransactionHandler.GetSelectedAddress();
         var tokenUri = await _contract.GetTokenUri(_tokenId);
         var watch = JsonConvert.DeserializeObject<Watch>(await _contract.GetNftMetadata(tokenUri));
+        if (watch == null)
+            return;
         CreateAuctionModel model = new CreateAuctionModel()
         {
             BidIncrement = _bidIncrease,

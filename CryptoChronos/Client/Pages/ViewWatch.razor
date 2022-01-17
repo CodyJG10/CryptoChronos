@@ -96,7 +96,7 @@ else
 	public string TokenId { get; set; }
 
 	private string _url;
-	private Watch _watch;
+	private Watch? _watch;
 
 	private bool _isOwner = false;
 
@@ -104,10 +104,17 @@ else
 	{
 		var tokenUri = await _contractService.GetTokenUri(TokenId);
 		var watchJson = await _contractService.GetNftMetadata(tokenUri);
+		if(watchJson == null)
+			return;
 		_watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+		if (_watch == null)
+			return;
 		_url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
-		var userAddress = await _clientService.TransactionHandler.GetSelectedAddress();
-		_isOwner = (await _contractService.GetNftOwner(TokenId)).ToLower() == userAddress.ToLower();
+		if(await _clientService.TransactionHandler.IsSiteConnected())
+		{
+			var userAddress = await _clientService.TransactionHandler.GetSelectedAddress();
+			_isOwner = (await _contractService.GetNftOwner(TokenId)).ToLower() == userAddress.ToLower();
+		}
 		StateHasChanged();
 	}
 

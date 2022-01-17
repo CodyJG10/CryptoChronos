@@ -118,7 +118,7 @@ else
     public string AuctionAddress { get; set; }
 
     private string _imgUri;
-    private Watch _watch;
+    private Watch? _watch;
 
     private Auction _auction;
     private bool _isSeller = false;
@@ -127,7 +127,6 @@ else
     private string _highestBid;
     private string _highestBidder;
     private int _views;
-    private string _sellerAddress;
     private string _sellerName;
     private string _currentBid;
 
@@ -147,7 +146,11 @@ else
         var _tokenId = _auction.TokenId;
         var tokenUri = await _contract.GetTokenUri(_tokenId);
         var watchJson = await _contract.GetNftMetadata(tokenUri);
+        if (watchJson == null)
+            return;
         _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+        if (_watch == null)
+            return;
         _imgUri = "https://ipfs.io/ipfs/" + _watch.ImageCID;
         _auction = await _contract.GetAuction(AuctionAddress);
         _sellerName = _auction.SellerAddress;
@@ -224,7 +227,6 @@ else
     {
         var address = await _client.TransactionHandler.GetSelectedAddress();
         _currentBid = await _contract.GetBidForUser(AuctionAddress, address);
-        BigInteger minimumBidAmount;
         var highestBid = BigInteger.Parse(_highestBid);
     }
 

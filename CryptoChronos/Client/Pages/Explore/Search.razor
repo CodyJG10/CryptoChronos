@@ -150,7 +150,7 @@ else
 
         // Users
         var usersMatchingAddress = allUsers.Where(x => x.Address.ToLower() == Query.ToLower());
-        var usersMatchingName = allUsers.Where(x => x.Name.ToLower().Contains(Query.ToLower()));
+        var usersMatchingName = allUsers.Where(x => x.Name != null && x.Name.ToLower().Contains(Query.ToLower()));
         _userResults.AddRange(usersMatchingAddress.ToList());
         _userResults.AddRange(usersMatchingName.ToList());
         _loading = false;
@@ -161,10 +161,10 @@ else
         var auctionsMatchingName = allAuctions.Where(x =>
         {
             var sellerAddress = x.SellerAddress;
-            var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
-            return sellerUser.Name.ToLower() == Query.ToLower();
+            var sellerUser = allUsers.SingleOrDefault(x => sellerAddress != null && x.Address.ToLower() == sellerAddress.ToLower());
+            return sellerUser != null && sellerUser.Name != null &&  sellerUser.Name.ToLower() == Query.ToLower();
         });
-        var auctionsMatchingSellerAddress = allAuctions.Where(x => x.SellerAddress.ToLower() == Query.ToLower());
+        var auctionsMatchingSellerAddress = allAuctions.Where(x => x.SellerAddress != null && x.SellerAddress.ToLower() == Query.ToLower());
         var auctionsMatchingToken = allAuctions.Where(x => x.TokenId.ToLower() == Query.ToLower());
         _auctionResults.AddRange(auctionsMatchingAddress.ToList());
         _auctionResults.AddRange(auctionsMatchingName.ToList());
@@ -177,11 +177,11 @@ else
         var listingsMatchingName = allListings.Where(x =>
         {
             var sellerAddress = x.SellerAddress;
-            var sellerUser = allUsers.SingleOrDefault(x => x.Address.ToLower() == sellerAddress.ToLower());
-            return sellerUser.Name.ToLower() == Query.ToLower();
+            var sellerUser = allUsers.SingleOrDefault(x => sellerAddress != null && x.Address.ToLower() == sellerAddress.ToLower());
+            return sellerUser != null && sellerUser.Name != null && sellerUser.Name.ToLower() == Query.ToLower();
         });
         var listingsMatchingToken = allListings.Where(x => x.TokenId.ToLower() == Query.ToLower());
-        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress.ToLower() == Query.ToLower());
+        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress != null &&  x.SellerAddress.ToLower() == Query.ToLower());
         _listingResults.AddRange(listingsMatchingAddress.ToList());
         _listingResults.AddRange(listingsMatchingName.ToList());
         _listingResults.AddRange(listingsMatchingToken.ToList());

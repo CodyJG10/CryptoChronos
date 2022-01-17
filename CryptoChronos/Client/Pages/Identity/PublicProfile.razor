@@ -14,7 +14,7 @@
                 <div class="card-body">
                     @if (_user.ProfilePictureUri != null)
                     {
-                        <img class="card-img-top" src="@_user.ProfilePictureUri">
+                        <img class="card-img-top" src="@_user.ProfilePictureUri" width="500">
                     }
                     <h5 class="card-title">@UserAddress</h5>
                     @if (_user.Name != null && _user.Name.Count() > 0)

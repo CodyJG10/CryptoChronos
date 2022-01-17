@@ -135,9 +135,12 @@ else
         }
         else
         {
-            _email = user.Email;
-            _name = user.Name;   
-            _profilePictureUri = user.ProfilePictureUri;
+            if(user.Email != null)
+                _email = user.Email;
+            if(user.Name != null)
+                _name = user.Name;   
+            if(user.ProfilePictureUri != null)
+                _profilePictureUri = user.ProfilePictureUri;
             _loading = false;
             StateHasChanged();
         }
@@ -176,7 +179,8 @@ else
         string address = await _client.TransactionHandler.GetSelectedAddress();
         await _userService.SaveUserProfilePicture(_profilePicture, address);
         var user = await _userService.GetUser(_address);
-        _profilePictureUri = user.ProfilePictureUri;
+        if(user.ProfilePictureUri != null)
+            _profilePictureUri = user.ProfilePictureUri;
         _showProfilePictureModal = false;
         _navManager.NavigateTo(_navManager.Uri, forceLoad: true);
     }

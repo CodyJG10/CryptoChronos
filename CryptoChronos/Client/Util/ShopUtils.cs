@@ -28,6 +28,8 @@ namespace CryptoChronos.Client.Util
                 var watch = JsonConvert.DeserializeObject<Watch>(watchJson);
 
                 var sellerName = listingRecord.SellerAddress;
+                if (sellerName == null)
+                    break;
                 var user = await userService.GetUser(sellerName);
                 if (user.Name != null)
                     sellerName = user.Name;

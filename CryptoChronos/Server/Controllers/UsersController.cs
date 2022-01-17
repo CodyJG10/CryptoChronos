@@ -26,7 +26,7 @@ namespace CryptoChronos.Server.Controllers
             => await _context.Users.ToListAsync();
 
         [HttpGet("User/{address}")]
-        public async Task<ActionResult<User>> GetUser(string address)
+        public ActionResult<User> GetUser(string address)
         {
             var user = _context.Users.SingleOrDefault(x => x.Address.ToLower() == address.ToLower());
 

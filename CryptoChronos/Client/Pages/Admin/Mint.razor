@@ -18,27 +18,27 @@
 <div class="container">
     <div class="form-group">
         <label>Serial Number</label>
-        <input type="text" class="form-control" placeholder="Enter Serial #" @bind="Serial"/>
+        <input type="text" class="form-control" placeholder="Enter Serial #" @bind="_serial"/>
     </div>
     <div class="form-group">
         <label>Manufacturer</label>
-        <input type="text" class="form-control" placeholder="Enter Manufacturer" @bind="Manufacturer" />
+        <input type="text" class="form-control" placeholder="Enter Manufacturer" @bind="_manufacturer" />
     </div>
     <div class="form-group">
         <label>Model</label>
-        <input type="text" class="form-control" placeholder="Enter Model" @bind="Model"/>
+        <input type="text" class="form-control" placeholder="Enter Model" @bind="_model"/>
     </div>
        <div class="form-group">
         <label>Recipient</label>
-        <input type="text" class="form-control" placeholder="Enter Recipient Address" @bind="UserAddress"/>
+        <input type="text" class="form-control" placeholder="Enter Recipient Address" @bind="_userAddress"/>
     </div>
     <div class="form-group">
         <label>Royalty Recipient</label>
-        <input type="text" class="form-control" placeholder="Enter Royalty Recipient Address" @bind="RoyaltyRecipient"/>
+        <input type="text" class="form-control" placeholder="Enter Royalty Recipient Address" @bind="_royaltyRecipient"/>
     </div>
     <div class="form-group">
         <label>Royalty Amount (In thousands. 1000 = 10%)</label>
-        <input type="text" class="form-control" placeholder="Enter Royalty amount" @bind="RoyaltyAmount"/>
+        <input type="text" class="form-control" placeholder="Enter Royalty amount" @bind="_royaltyAmount"/>
     </div>
     <div class="form-group">
         <label>Image</label>
@@ -86,12 +86,12 @@
     public bool IsMinting { get; set; } = false;
     public string Status { get; set; } = "Executing...";
 
-    public string Manufacturer { get; set; }
-    public string Model { get; set; } 
-    public string Serial { get; set; }
-    public string RoyaltyAmount { get; set; }
-    public string RoyaltyRecipient { get; set; }
-    public string UserAddress {  get; set; }
+    private string _manufacturer;
+    private string _model;
+    private string _serial;
+    private string _royaltyAmount;
+    private string _royaltyRecipient;
+    private string _userAddress;
 
     public List<Metadata> AllMetadata = new List<Metadata>();
 
@@ -108,9 +108,9 @@
     {
         Watch watch = new Watch()
         {
-            Manufacturer = Manufacturer,
-            Model = Model,
-            Serial = Serial,
+            Manufacturer = _manufacturer,
+            Model = _model,
+            Serial = _serial,
             Metadata = AllMetadata,
             ImageCID = ""
         };
@@ -119,20 +119,23 @@
         StateHasChanged();
 
         var address = await _client.TransactionHandler.GetSelectedAddress();
-        if (UserAddress == null || UserAddress == "")
-            address = UserAddress;
+        if (_userAddress == null || _userAddress == "")
+            address = _userAddress;
 
         var stream = _file.OpenReadStream(51200000);
         MemoryStream memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream);
+
+        if (address == null)
+            return;
 
         MintWatchModel model = new MintWatchModel()
         {
             UserAddress = address,
             FileData = memoryStream.ToArray(),
             Watch = watch,
-            RoyaltyAmount = RoyaltyAmount,
-            RoyaltyRecipient = RoyaltyRecipient
+            RoyaltyAmount = _royaltyAmount,
+            RoyaltyRecipient = _royaltyRecipient
         };
         await _contract.MintNft(model);
         Status = "NFT Succesfully minted!";
@@ -150,11 +153,11 @@
     {
         NavManager.NavigateTo("/NFTs");
     }
-
     private void DeleteMetadata(Metadata metadata)
     {
         AllMetadata = AllMetadata.Where(x => x.Key != metadata.Key).ToList();
         StateHasChanged();
+
     }
 
     private void LoadFiles(InputFileChangeEventArgs e) => _file = e.File;

@@ -68,8 +68,6 @@
 
 @code {
     private string _address { get; set; } = "Connect Wallet";
-    private bool _hasMetamask = false;
-    private bool _isLoading = true;
     private bool _isSignedIn = false;
     private bool _isAdmin = false;
     private bool _isOwner = false;
@@ -90,7 +88,6 @@
 
     private async void UpdateData()
     {
-        _isLoading = true;
         if (await _metaMaskService.HasMetaMask())
         {
             MetaMaskService.AccountChangedEvent += AccountChanged;
@@ -105,12 +102,11 @@
                 else
                 {
                     var user = await _userService.GetUser(address);
-                    _address = user.Name;
+                    if(user.Name != null)
+                        _address = user.Name;
                 }
             }
-            _hasMetamask = true;
         }
-        _isLoading = false;
         StateHasChanged();
     }
 
