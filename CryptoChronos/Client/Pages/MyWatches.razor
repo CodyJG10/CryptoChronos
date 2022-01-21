@@ -12,8 +12,10 @@
 }
 else
 {
-<div class="row" style="text-align: center;margin-top: 10px;">
-        
+<div class="row text-center">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+
     @if (AllNFTs.Count > 0)
     {
         for (int i = 0; i < AllNFTs.Count; i++)
@@ -26,6 +28,8 @@ else
     {
         <NoResults Text="You don't have any watches yet!"/>
     }
+    </div>
+    <div class="col-md-2"></div>
 </div>
 }
 @code{
