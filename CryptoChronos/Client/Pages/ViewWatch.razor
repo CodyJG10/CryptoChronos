@@ -16,10 +16,6 @@
 			<table class="table">
 				<tbody>
 					<tr class="table-primary">
-						<td>Contract Address</td>
-						<td>@_config["NFTAddress"]</td>
-					</tr>
-					<tr class="table-primary">
 						<td>NFT ID</td>
 						<td>@TokenId</td>
 					</tr>
@@ -54,14 +50,12 @@
 			}
 			<div class="text-center">
 				<p class="text-primary">Options</p>
-				<div class="btn-group" role="group">
 					<button class="btn btn-primary" type="button" @onclick="ViewOnEtherscan">View On Etherscan</button>
 					@if(_isOwner)
 					{
 						<button class="btn btn-primary" type="button" @onclick="TransferButtonClicked">Transfer</button>
 						<button class="btn btn-primary" type="button" @onclick="@(() => _navManager.NavigateTo("CreateEscrow"))">Sell With Escrow Smart Contract</button>
 					}
-				</div>
 			</div>
 
 		</div>

@@ -47,14 +47,12 @@
 
     <div class="form-group">
         <label>Additional Info</label>
-        <div class="container bg-grey list-group">
             <ul>
                 @foreach(var metadata in AllMetadata)
                 {
                     <NFTMetadata Metadata="metadata" OnDelete="DeleteMetadata"></NFTMetadata>
                 }
             </ul>
-        </div>
         <button @onclick="AddMetadata" class="btn btn-secondary">New Metadata Entry</button>
     </div>
 
