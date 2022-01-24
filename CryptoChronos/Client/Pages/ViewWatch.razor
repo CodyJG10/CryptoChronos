@@ -100,7 +100,7 @@ else
 	private void ViewOnEtherscan()
 	{
 		string nftAddress = _config["NFTAddress"];
-		string url = @"https://ropsten.etherscan.io/token/" + nftAddress + "?a=" + TokenId;
+		string url = @"https://polygonscan.com/token/" + nftAddress + "?a=" + TokenId;
 		_navManager.NavigateTo(url);
 	}
 
