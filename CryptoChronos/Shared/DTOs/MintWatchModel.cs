@@ -9,7 +9,5 @@ namespace CryptoChronos.Shared.DTOs
         public Watch Watch { get; set; }
         public string RoyaltyRecipient { get; set; }
         public string RoyaltyAmount { get; set; }
-        public string TokenId { get; set; }
-        public string? IpfsHash { get; set; }
     }
 }

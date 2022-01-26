@@ -117,7 +117,7 @@
         StateHasChanged();
 
         var address = await _client.TransactionHandler.GetSelectedAddress();
-        if (_userAddress != null && _userAddress != "")
+        if (_userAddress == null || _userAddress == "")
             address = _userAddress;
 
         var stream = _file.OpenReadStream(51200000);
@@ -133,12 +133,9 @@
             FileData = memoryStream.ToArray(),
             Watch = watch,
             RoyaltyAmount = _royaltyAmount,
-            RoyaltyRecipient = _royaltyRecipient,
-            TokenId = new Random().Next().ToString()
+            RoyaltyRecipient = _royaltyRecipient
         };
-        var ipfsHash = await _contract.StoreNFTData(model);
-        await _client.NftController.MintNft(model, ipfsHash);
-
+        await _contract.MintNft(model);
         Status = "NFT Succesfully minted!";
         StateHasChanged();
         NavManager.NavigateTo("/MyWatches");

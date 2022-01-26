@@ -1,7 +1,6 @@
 ﻿using CryptoChronos.Shared.DTOs;
 using CryptoChronos.Shared.Enums;
 using CryptoChronos.Shared.Models;
-using Newtonsoft.Json;
 using System.Net.Http.Json;
 
 namespace CryptoChronos.Shared.Services
@@ -89,9 +88,9 @@ namespace CryptoChronos.Shared.Services
             var result = await _httpClient.GetStringAsync("TokenUri?tokenId=" + tokenId);
             return result;
         }
-        public async Task<string> StoreNFTData(MintWatchModel model)
+        public async Task<string> MintNft(MintWatchModel model)
         {
-            var result = await _httpClient.PostAsJsonAsync("StoreNFT", model);
+            var result = await _httpClient.PostAsJsonAsync("MintNft", model);
             return await result.Content.ReadAsStringAsync();
         }
 
