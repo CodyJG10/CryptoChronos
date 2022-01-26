@@ -1,4 +1,5 @@
-﻿
+﻿using CryptoChronos.Shared.DTOs;
+using Microsoft.JSInterop;
 using NFT.ContractInteraction.Server.Interfaces;
 using System.Numerics;
 using Watches.Contracts.WatchNFT;
@@ -48,6 +49,21 @@ namespace NFT.ContractInteraction.Server.Implementations
             WatchNFTService nftService = new WatchNFTService(_client.Web3, _client.NftAddress);
             var uri = await nftService.TokenURIQueryAsync(BigInteger.Parse(tokenId));
             return uri;
+        }
+
+        public async Task<MintWatchReceipt> MintNft(MintWatchModel model)
+        {
+            WatchNFTService nftService = new WatchNFTService(_client.Web3, _client.NftAddress);
+            var tokenId = new BigInteger(new Random().Next());
+            var ipfsData = await _storage.StoreNewNFT(model.FileData, model.Watch, tokenId.ToString());
+            string ipfsHash = ipfsData[0];
+            string ipfsImageCID = ipfsData[1];
+            await nftService.SafeMintAndSetUriRequestAsync(model.UserAddress, tokenId, ipfsHash, BigInteger.Parse(model.RoyaltyAmount), model.RoyaltyRecipient);
+            return new MintWatchReceipt()
+            {
+                TokenId = tokenId.ToString(),
+                ImageCID = ipfsImageCID
+            };
         }
 
         public async Task<string> GetNftOwner(string tokenId)

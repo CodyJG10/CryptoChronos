@@ -21,6 +21,22 @@ namespace WatchNFT.Server.Controllers
             var result = await _nftService.NftController.GetTokenUri(tokenId);
             return result;
         }
+        [HttpPost("MintNft")]
+        public async Task<string> MintNft(MintWatchModel model)
+        {
+            var receipt = await _nftService.NftController.MintNft(model);
+            LocalWatchRecord watchRecord = new LocalWatchRecord()
+            {
+                Model = model.Watch.Model,
+                Manufacturer = model.Watch.Manufacturer,
+                NftId = receipt.TokenId,
+                Serial = model.Watch.Serial,
+                ImageCID = receipt.ImageCID
+            };
+            _context.Add(watchRecord);
+            _context.SaveChanges();
+            return receipt.TokenId;
+        }
         [HttpGet("OwnerOf")]
         public async Task<string> GetNftOwner(string tokenId)
             => await _nftService.NftController.GetNftOwner(tokenId);
@@ -29,23 +45,6 @@ namespace WatchNFT.Server.Controllers
         {
             var result = await _nftService.Storage.GetJsonFromIpfs(url);
             return result;
-        }
-        [HttpPost("StoreNFT")]
-        // Returns URI
-        public async Task<string[]> StoreNFT(MintWatchModel model)
-        {
-            var ipfsData = await _nftService.Storage.StoreNewNFT(model.FileData, model.Watch, model.TokenId);
-            LocalWatchRecord watchRecord = new LocalWatchRecord()
-            {
-                Model = model.Watch.Model,
-                Manufacturer = model.Watch.Manufacturer,
-                NftId = model.TokenId,
-                Serial = model.Watch.Serial,
-                ImageCID = ipfsData[1]
-            };
-            _context.Add(watchRecord);
-            _context.SaveChanges();
-            return ipfsData;
         }
     }
 }
