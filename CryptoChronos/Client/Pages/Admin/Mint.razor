@@ -133,9 +133,12 @@
             FileData = memoryStream.ToArray(),
             Watch = watch,
             RoyaltyAmount = _royaltyAmount,
-            RoyaltyRecipient = _royaltyRecipient
+            RoyaltyRecipient = _royaltyRecipient,
+            TokenId = new Random().Next().ToString()
         };
-        await _contract.MintNft(model);
+
+        var ipfsHash = await _contract.StoreNftData(model);
+        await _client.NftController.MintNft(model, ipfsHash);
         Status = "NFT Succesfully minted!";
         StateHasChanged();
         NavManager.NavigateTo("/MyWatches");

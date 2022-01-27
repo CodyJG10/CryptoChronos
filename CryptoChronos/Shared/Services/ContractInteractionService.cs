@@ -88,9 +88,11 @@ namespace CryptoChronos.Shared.Services
             var result = await _httpClient.GetStringAsync("TokenUri?tokenId=" + tokenId);
             return result;
         }
-        public async Task<string> MintNft(MintWatchModel model)
+
+        // Returns URI
+        public async Task<string> StoreNftData(MintWatchModel model)
         {
-            var result = await _httpClient.PostAsJsonAsync("MintNft", model);
+            var result = await _httpClient.PostAsJsonAsync("StoreNFT", model);
             return await result.Content.ReadAsStringAsync();
         }
 
@@ -123,7 +125,6 @@ namespace CryptoChronos.Shared.Services
 
         public async Task<string> GetEscrowAddressFromTransaction(string txHash, string owner)
             => await _httpClient.GetStringAsync("EscrowAddress?transaction=" + txHash + "&owner=" + owner);
-
         #endregion
     }
 }

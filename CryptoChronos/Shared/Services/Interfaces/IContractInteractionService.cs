@@ -20,9 +20,9 @@ namespace CryptoChronos.Shared.Services
         public Task<AuctionState> GetListingState(string listingAddress);
         public Task<FixedListing> GetListing(string listingAddress);
         public Task<List<string>> GetAllNfts(string owner);
+        public Task<string> StoreNftData(MintWatchModel model);
         public Task<List<LocalWatchRecord>> GetAllNfts();
         public Task<string> GetTokenUri(string tokenId);
-        public Task<string> MintNft(MintWatchModel model);
         public Task<string> GetNftOwner(string tokenId);
         public Task<string> GetNftMetadata(string url);
         public Task<EscrowStatus> GetEscrowState(string address);

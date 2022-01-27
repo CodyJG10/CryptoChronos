@@ -21,22 +21,25 @@ namespace WatchNFT.Server.Controllers
             var result = await _nftService.NftController.GetTokenUri(tokenId);
             return result;
         }
-        [HttpPost("MintNft")]
+
+        [HttpPost("StoreNft")]
+        // Returns IPFS CID
         public async Task<string> MintNft(MintWatchModel model)
         {
-            var receipt = await _nftService.NftController.MintNft(model);
+            var ipfsData = await _nftService.Storage.StoreNewNFT(model.FileData, model.Watch, model.TokenId);
             LocalWatchRecord watchRecord = new LocalWatchRecord()
             {
                 Model = model.Watch.Model,
                 Manufacturer = model.Watch.Manufacturer,
-                NftId = receipt.TokenId,
+                NftId = model.TokenId,
                 Serial = model.Watch.Serial,
-                ImageCID = receipt.ImageCID
+                ImageCID = ipfsData[1]
             };
             _context.Add(watchRecord);
             _context.SaveChanges();
-            return receipt.TokenId;
+            return ipfsData[0];
         }
+
         [HttpGet("OwnerOf")]
         public async Task<string> GetNftOwner(string tokenId)
             => await _nftService.NftController.GetNftOwner(tokenId);

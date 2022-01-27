@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CryptoChronos.Shared.DTOs;
+using Microsoft.Extensions.Configuration;
 using Nethereum.ABI.Model;
+using Nethereum.RPC.Eth.DTOs;
 using NFT.ContractInteraction.Client.Interfaces;
 using System.Numerics;
 
@@ -48,6 +50,27 @@ namespace NFT.ContractInteraction.Client.Implementations
 
 
             return receipt.TransactionHash;
+        }
+
+        public async Task<TransactionReceipt> MintNft(MintWatchModel model, string ipfsHash)
+        {
+            var inputsParameters = new[] {
+                        new Parameter("address", "to"),
+                        new Parameter("uint256", "tokenId"),
+                        new Parameter("string", "uri"),
+                        new Parameter("uint256", "royaltyAmount"),
+                        new Parameter("address", "royaltyRecipient"),
+                    };
+
+            string nftAddress = _config["NftAddress"];
+
+            return await _transactionHandler.SendTransactionAndWaitForReceipt("safeMintAndSetUri", nftAddress, 0, inputsParameters,
+                  model.UserAddress,
+                  model.TokenId,
+                  ipfsHash,
+                  BigInteger.Parse(model.RoyaltyAmount),
+                  model.RoyaltyRecipient
+              );
         }
 
     }
