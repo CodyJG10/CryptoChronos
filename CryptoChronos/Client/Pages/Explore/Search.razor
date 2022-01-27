@@ -157,7 +157,7 @@ else
         StateHasChanged();
 
         // Auctions
-        var auctionsMatchingAddress = allAuctions.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
+       @* var auctionsMatchingAddress = allAuctions.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
         var auctionsMatchingName = allAuctions.Where(x =>
         {
             var sellerAddress = x.SellerAddress;
@@ -186,7 +186,7 @@ else
         _listingResults.AddRange(listingsMatchingName.ToList());
         _listingResults.AddRange(listingsMatchingToken.ToList());
         _listingResults.AddRange(listingsMatchingSellerAddress.ToList());
-        StateHasChanged();
+        StateHasChanged();*@
     }
 
 }
