@@ -34,12 +34,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var tokenUri = await _contractService.GetTokenUri(TokenId);
-        var watchJson = await _contractService.GetNftMetadata(tokenUri);
-        _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
-        if(_watch == null)
-            return;
-        _url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+        try
+        {
+            var tokenUri = await _contractService.GetTokenUri(TokenId);
+            var watchJson = await _contractService.GetNftMetadata(tokenUri);
+            _watch = JsonConvert.DeserializeObject<Watch>(watchJson);
+            if (_watch == null)
+                return;
+            _url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+        }
+        catch (Exception) { }
         StateHasChanged();
     }
 

@@ -33,7 +33,8 @@ namespace WatchNFT.Server.Controllers
                 Manufacturer = model.Watch.Manufacturer,
                 NftId = model.TokenId,
                 Serial = model.Watch.Serial,
-                ImageCID = ipfsData[1]
+                ImageCID = ipfsData[1],
+                ChainId = int.Parse(_config["ChainId"])
             };
             _context.Add(watchRecord);
             _context.SaveChanges();

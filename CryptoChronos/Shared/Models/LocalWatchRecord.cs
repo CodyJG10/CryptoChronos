@@ -14,5 +14,6 @@ namespace CryptoChronos.Shared.Models
         public string Model { get; set; }
         public string NftId { get; set; }
         public string ImageCID { get; set; }
+        public int ChainId { get; set; }
     }
 }

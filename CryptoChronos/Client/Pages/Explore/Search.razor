@@ -8,6 +8,7 @@
 @inject IUserService _userService
 @inject IListingService _auctionService
 @inject NavigationManager _navManager
+@inject IConfiguration _config
 
 @if (!_loading)
 {
@@ -129,9 +130,9 @@ else
         _tokenResults.Clear();
 
         var allUsers = await _userService.GetAllUsers();
-        var allAuctions = await _contract.GetAllAuctions();
-        var allListings = await _contract.GetAllListings();
-        var allNfts = await _contract.GetAllNfts();
+        @*var allAuctions = await _contract.GetAllAuctions();*@
+        @*var allListings = await _contract.GetAllListings();*@
+        var allNfts = (await _contract.GetAllNfts()).Where(x => x.ChainId == int.Parse(_config["ChainId"]));
 
         // Nfts
         @*List<string> tokensMatchingId = allNfts.Where(x => x.NftId.ToLower() == Query.ToLower()).ToList();*@

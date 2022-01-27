@@ -10,11 +10,13 @@ namespace WatchNFT.Server.Controllers
     {
         private NftServerService _nftService;
         private ApplicationDbContext _context;
+        private IConfiguration _config;
 
-        public ContractInteractionController(NftServerService nftService, ApplicationDbContext context)
+        public ContractInteractionController(NftServerService nftService, ApplicationDbContext context, IConfiguration config)
         {
             _nftService = nftService;
             _context = context;
+            _config = config;
         }
     }
 }
