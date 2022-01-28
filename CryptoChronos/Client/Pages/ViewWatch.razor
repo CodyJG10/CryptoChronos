@@ -13,7 +13,7 @@
 			
 			<h2 class="text-primary text-center">@(_watch.Manufacturer + " " + _watch.Model)</h2>
 
-			<table class="table">
+			<table class="table text-center">
 				<tbody>
 					<tr class="table-primary">
 						<td>NFT ID</td>
@@ -36,7 +36,7 @@
 
 			@if (_watch.Metadata.Count() > 0)
 			{
-				<table class="table">
+				<table class="table text-center">
 					<tbody>
 						@foreach (var metadata in _watch.Metadata)
 						{
@@ -49,13 +49,15 @@
 				</table>
 			}
 			<div class="text-center">
-				<p class="text-primary">Options</p>
-					<button class="btn btn-primary" type="button" @onclick="ViewOnEtherscan">View On Etherscan</button>
+				<div class="btn-group">
+					<button class="btn btn-primary" type="button" @onclick="ViewOnExplorer">View On Explorer</button>
+					<button class="btn btn-primary" type="button" @onclick="ViewPrices">View Prices</button>
 					@if(_isOwner)
 					{
 						<button class="btn btn-primary" type="button" @onclick="TransferButtonClicked">Transfer</button>
 						<button class="btn btn-primary" type="button" @onclick="@(() => _navManager.NavigateTo("CreateEscrow"))">Sell With Escrow Smart Contract</button>
 					}
+				</div>
 			</div>
 
 		</div>
@@ -97,10 +99,28 @@ else
 	private void TransferButtonClicked()
 		=> _navManager.NavigateTo("/transfer/" + TokenId);
 
-	private void ViewOnEtherscan()
+	private void ViewOnExplorer()
 	{
 		string nftAddress = _config["NFTAddress"];
-		string url = @"https://polygonscan.com/token/" + nftAddress + "?a=" + TokenId;
+		string url;
+		if(_config["ChainId"] == "137")
+		{
+			url = @"https://polygonscan.com/token/" + nftAddress + "?a=" + TokenId;
+		}
+		else
+		{
+			url = @"https://ropsten.etherscan.io/" + nftAddress + "?a=" + TokenId;
+		}
+		_navManager.NavigateTo(url);
+	}
+
+	private void ViewPrices()
+	{
+		if (_watch == null || _watch.Manufacturer == null || _watch.Model == null)
+			return;
+		string queryParameter = _watch.Manufacturer + "+" + _watch.Model;
+		queryParameter = queryParameter.Replace(" ", "+");
+		string url = "https://www.google.com/search?&tbm=shop&sclient=products-cc&q=" + queryParameter;
 		_navManager.NavigateTo(url);
 	}
 

@@ -139,12 +139,11 @@ else
         _tokenResults.AddRange(from x in allNfts
                                 where x.NftId.ToLower() == Query.ToLower()
                                 select x);
-        // NFT Serial Numbers
+        // NFT Serial Numbers & Watch Metadata
         foreach(var nft in allNfts)
         {
             if (nft.Serial.ToLower() == Query.ToLower())
                 _tokenResults.Add(nft);
-
         }
 
         StateHasChanged();
