@@ -116,9 +116,9 @@
         Status = "Minting NFT";
         StateHasChanged();
 
-        var address = await _client.TransactionHandler.GetSelectedAddress();
+        var address = _userAddress;
         if (_userAddress == null || _userAddress == "")
-            address = _userAddress;
+            address = await _client.TransactionHandler.GetSelectedAddress();
 
         var stream = _file.OpenReadStream(51200000);
         MemoryStream memoryStream = new MemoryStream();
