@@ -42,9 +42,9 @@
             if (_watch == null)
                 return;
             _url = "https://ipfs.io/ipfs/" + _watch.ImageCID;
+            StateHasChanged();
         }
         catch (Exception) { }
-        StateHasChanged();
     }
 
     private void View()

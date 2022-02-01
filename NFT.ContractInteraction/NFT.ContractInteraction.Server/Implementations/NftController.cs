@@ -54,14 +54,13 @@ namespace NFT.ContractInteraction.Server.Implementations
         public async Task<MintWatchReceipt> MintNft(MintWatchModel model)
         {
             WatchNFTService nftService = new WatchNFTService(_client.Web3, _client.NftAddress);
-            var tokenId = new BigInteger(new Random().Next());
-            var ipfsData = await _storage.StoreNewNFT(model.FileData, model.Watch, tokenId.ToString());
+            var ipfsData = await _storage.StoreNewNFT(model.FileData, model.Watch, model.TokenId.ToString());
             string ipfsHash = ipfsData[0];
             string ipfsImageCID = ipfsData[1];
-            await nftService.SafeMintAndSetUriRequestAsync(model.UserAddress, tokenId, ipfsHash, BigInteger.Parse(model.RoyaltyAmount), model.RoyaltyRecipient);
+            await nftService.SafeMintAndSetUriRequestAsync(model.UserAddress, BigInteger.Parse(model.TokenId), ipfsHash, BigInteger.Parse(model.RoyaltyAmount), model.RoyaltyRecipient);
             return new MintWatchReceipt()
             {
-                TokenId = tokenId.ToString(),
+                TokenId = model.TokenId.ToString(),
                 ImageCID = ipfsImageCID
             };
         }

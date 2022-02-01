@@ -49,9 +49,16 @@ namespace NFT.ContractInteraction.Server
 
         public async Task<string> GetJsonFromIpfs(string url)
         {
-            HttpClient http = new HttpClient();
-            var result = await http.GetAsync(url);
-            return await result.Content.ReadAsStringAsync();
+            try
+            {
+                HttpClient http = new HttpClient();
+                var result = await http.GetAsync(url);
+                return await result.Content.ReadAsStringAsync();
+            }
+            catch(Exception)
+            {
+                return null;
+            }
         }
     }
 }

@@ -18,8 +18,15 @@ namespace WatchNFT.Server.Controllers
         [HttpGet("TokenUri")]
         public async Task<string> GetTokenUri(string tokenId)
         {
-            var result = await _nftService.NftController.GetTokenUri(tokenId);
-            return result;
+            try
+            {
+                var result = await _nftService.NftController.GetTokenUri(tokenId);
+                return result;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
         }
 
         [HttpPost("StoreNft")]
