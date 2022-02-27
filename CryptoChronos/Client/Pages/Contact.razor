@@ -4,22 +4,23 @@
 @inject IConfiguration _config
 @inject NavigationManager _navManager
 
-<div class="col-md-4"></div>
-<div class="col-md-4">
-    <div class="block-heading text-center">
-        <h2 class="text-info">Contact Us</h2>
-        <p>Send us a message regarding technical issues, interest in our services, and anything else you may need!</p>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+        <div class="block-heading text-center">
+            <h2 class="text-info">Contact Us</h2>
+            <p>Send us a message regarding technical issues, interest in our services, and anything else you may need!</p>
+        </div>
+        <div>
+            <div class="mb-3"><label class="form-label" for="name">Name</label><input class="form-control" type="text" id="name" name="name" @bind="_name"></div>
+            <div class="mb-3"><label class="form-label" for="subject">Subject</label><input class="form-control" type="text" id="subject" name="subject" @bind="_subject"></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" type="email" id="email" name="email" @bind="_email"></div>
+            <div class="mb-3"><label class="form-label" for="message">Message</label><textarea class="form-control" id="message" name="message" @bind="_message"></textarea></div>
+            <div class="mb-3"><button class="btn btn-primary" type="submit" @onclick="Send">Send</button></div>
+        </div>
     </div>
-    <div>
-        <div class="mb-3"><label class="form-label" for="name">Name</label><input class="form-control" type="text" id="name" name="name" @bind="_name"></div>
-        <div class="mb-3"><label class="form-label" for="subject">Subject</label><input class="form-control" type="text" id="subject" name="subject" @bind="_subject"></div>
-        <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" type="email" id="email" name="email" @bind="_email"></div>
-        <div class="mb-3"><label class="form-label" for="message">Message</label><textarea class="form-control" id="message" name="message" @bind="_message"></textarea></div>
-        <div class="mb-3"><button class="btn btn-primary" type="submit" @onclick="Send">Send</button></div>
-    </div>
+    <div class="col-md-3"></div>
 </div>
-<div class="col-md-4"></div>
-
 @code {
 
     private string _name;

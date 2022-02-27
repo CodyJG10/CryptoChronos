@@ -14,8 +14,6 @@ namespace NFT.ContractInteraction.Server.Extensions
             NethereumClient client = new NethereumClient(ownerPrivateKey, chainId, escrowManagerAddress, auctionFactoryAddress, nftAddress, url, listingFactoryAddress);
             services.AddTransient(x => client);
             services.AddTransient<INftController, NftController>();
-            services.AddTransient<IListingController, ListingsController>();
-            services.AddTransient<IAuctionController, AuctionController>();
             services.AddTransient<IEscrowController, EscrowController>();
             services.AddTransient(x => new StorageHelper(pinataApiKey, pinataApiSecret));
             services.AddTransient<NftServerService>();

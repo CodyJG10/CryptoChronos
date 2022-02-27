@@ -6,7 +6,6 @@
 @inject IContractInteractionService _contract
 @inject NftClientService _client
 @inject IUserService _userService
-@inject IListingService _auctionService
 @inject NavigationManager _navManager
 @inject IConfiguration _config
 
@@ -46,44 +45,6 @@
             </div>
         }
 
-        @if (_auctionResults.Count > 0)
-        {
-            <div class="row">
-                <h3 class="text-primary">Auctions</h3>
-                @foreach (var auction in _auctionResults)
-                {
-                    <div class="card shadow">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted card-subtitle mb-2 text-secondary">@auction.SellerAddress</h6>
-                            <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/auction/" + auction.ListingAddress))">View</button>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-
-        @if (_listingResults.Count > 0)
-        {
-            <div class="row">
-                <h3 class="text-primary">Listings</h3>
-                @foreach (var listing in _listingResults)
-                {
-                    <div class="card shadow nft-container">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted card-subtitle mb-2 text-secondary">@listing.SellerAddress</h6>
-                            <p class="text-secondary card-text" style="font-size: 20px;filter: brightness(200%) contrast(100%);">Watch For Sale...</p>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button class="btn btn-primary" type="button" style="width: 250px;" @onclick="@(() => _navManager.NavigateTo("/listing/" + listing.ListingAddress))">View</button>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-
         @if (_tokenResults.Count > 0)
         {
             <div class="row">
@@ -107,8 +68,6 @@ else
     public string Query { get; set; }
 
     private List<User> _userResults = new List<User>();
-    private List<LocalListingRecord> _auctionResults = new List<LocalListingRecord>();
-    private List<LocalListingRecord> _listingResults = new List<LocalListingRecord>();
     private List<LocalWatchRecord> _tokenResults = new List<LocalWatchRecord>();
 
     private bool _loading = false;
@@ -125,8 +84,6 @@ else
         StateHasChanged();
 
         _userResults.Clear();
-        _auctionResults.Clear();
-        _listingResults.Clear();
         _tokenResults.Clear();
 
         var allUsers = await _userService.GetAllUsers();
@@ -156,37 +113,6 @@ else
         _loading = false;
         StateHasChanged();
 
-        // Auctions
-       @* var auctionsMatchingAddress = allAuctions.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
-        var auctionsMatchingName = allAuctions.Where(x =>
-        {
-            var sellerAddress = x.SellerAddress;
-            var sellerUser = allUsers.SingleOrDefault(x => sellerAddress != null && x.Address.ToLower() == sellerAddress.ToLower());
-            return sellerUser != null && sellerUser.Name != null &&  sellerUser.Name.ToLower() == Query.ToLower();
-        });
-        var auctionsMatchingSellerAddress = allAuctions.Where(x => x.SellerAddress != null && x.SellerAddress.ToLower() == Query.ToLower());
-        var auctionsMatchingToken = allAuctions.Where(x => x.TokenId.ToLower() == Query.ToLower());
-        _auctionResults.AddRange(auctionsMatchingAddress.ToList());
-        _auctionResults.AddRange(auctionsMatchingName.ToList());
-        _auctionResults.AddRange(auctionsMatchingToken.ToList());
-        _auctionResults.AddRange(auctionsMatchingSellerAddress.ToList());
-        StateHasChanged();
-
-        // Listings
-        var listingsMatchingAddress = allListings.Where(x => x.ListingAddress.ToLower() == Query.ToLower());
-        var listingsMatchingName = allListings.Where(x =>
-        {
-            var sellerAddress = x.SellerAddress;
-            var sellerUser = allUsers.SingleOrDefault(x => sellerAddress != null && x.Address.ToLower() == sellerAddress.ToLower());
-            return sellerUser != null && sellerUser.Name != null && sellerUser.Name.ToLower() == Query.ToLower();
-        });
-        var listingsMatchingToken = allListings.Where(x => x.TokenId.ToLower() == Query.ToLower());
-        var listingsMatchingSellerAddress = allListings.Where(x => x.SellerAddress != null &&  x.SellerAddress.ToLower() == Query.ToLower());
-        _listingResults.AddRange(listingsMatchingAddress.ToList());
-        _listingResults.AddRange(listingsMatchingName.ToList());
-        _listingResults.AddRange(listingsMatchingToken.ToList());
-        _listingResults.AddRange(listingsMatchingSellerAddress.ToList());
-        StateHasChanged();*@
     }
 
 }

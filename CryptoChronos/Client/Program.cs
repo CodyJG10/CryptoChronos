@@ -16,7 +16,6 @@ builder.Services.AddContractControllers();
 var baseAddress = builder.Configuration["BaseAddress"];
 
 builder.Services.AddHttpClient<IUserService, UserService>(options => options.BaseAddress = new Uri(baseAddress + "api/Users/"));
-builder.Services.AddHttpClient<IListingService, ListingService>(options => options.BaseAddress = new Uri(baseAddress + "api/Listings/"));
 builder.Services.AddHttpClient<IContractInteractionService, ContractInteractionService>(options => options.BaseAddress = new Uri(baseAddress + "api/ContractInteraction/"));
 builder.Services.AddHttpClient<EmailService>(options => options.BaseAddress = new Uri(baseAddress + "api/Email/"));
 
