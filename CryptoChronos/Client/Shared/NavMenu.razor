@@ -6,161 +6,404 @@
 @inject MetaMaskService _metaMaskService
 @inject IUserService _userService
 @inject NavigationManager _navManager
+@inject IJSRuntime _js
 @inject IConfiguration _config
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img src="/images/logo_white_trans.png" width="150"/>
-        </a>
-            
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                <a class="nav-link" href="Explore" Match="NavLinkMatch.All">Explore</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="MyWatches">My Watches</a>
-            </li>
 
-                @if (_isAdmin)
-            {
-                <li class="nav-item">
-                    <a class="nav-link text-light" href="Mint">Mint</a>
-                </li>
-            }
-            @if(_isAdmin)
-            {
-                <li class="nav-item">
-                    <a class="nav-link" href="CreateAuction">Create Auction</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="CreateListing">Create Listing</a>
-                </li>
-            }
-                <li class="nav-item">
-                        <div class="input-group align-items-stretch flex-grow-1">
-                        <input class="form-control" type="text" placeholder="Search For NFTs, Creators, Listings, Etc." @bind="_query">
-                        <button class="btn btn-secondary" type="button" @onclick="SearchForResults">Search</button>
-                    </div>
-                </li>
-            </ul>
+    <header class="header__1 js-header" id="header">
+		<div class="container">
+			<div class="wrapper js-header-wrapper">
+				<div class="header__logo">
+					<a href="/">
+						<img
+							class="header__logo"
+							id="logo_js"
+							src="images/Crypto Chronos-logo-blue.jpeg"
+							alt="logo"
+							/>
+					</a>
+				</div>
+			
+				<!-- ==================  -->
+				<div class="header__menu">
+					<ul class="d-flex space-x-20">
+						<li class="has_popup">
+							@{
+								bool toggled = false;
+								var className = "";
+								if(toggled)
+								{
+									className = "visible";
+								}
 
-            @if (!_isSignedIn)
-            {
-                <button class="btn btn-secondary" @onclick="ConnectWallet">
-                    <span class="oi oi-person" aria-hidden="true"></span>
-                    @_address
-                </button>
-            }
-            else
-            {
-                @*var buttonClass = "btn-gradient-primary";*@
-                var buttonClass = "btn-primary";
-                if (!_isOnRightNetwork)
-                    buttonClass = "btn-danger";
-                @if(_isOnRightNetwork)
-                {
-                    <a class="btn btn-gradient-primary btn-sm px-3 d-lg-flex align-items-center" @onclick="ConnectWallet"> <i class="las la-wallet me-2 transform-none"></i>@_address</a>
-                }
-                else
-                {
-                    <a class="btn btn-danger btn-sm px-3 d-lg-flex align-items-center" @onclick="@(() => _navManager.NavigateTo("/WrongNetwork"))">Wrong Network Connected</a>
-                }
-            }
-        </div>
-    </div>
+								void ToggleHome()
+								{
+									toggled = !toggled;
+									StateHasChanged();
+								}
+							}
+							<a class="color_black" @onclick="(() => ToggleHome())">Homes <i class="ri-more-2-fill"></i></a>
+							<ul class="menu__popup space-y-20 @className">
+								<li>
+									<a href="Home1.html">
+										<i class="ri-home-smile-2-line"></i>
+										Home page 1
+									</a>
+								</li>
+								<li>
+									<a href="Home2.html">
+										<i class="ri-home-2-line"></i> Home page 2</a>
+								</li>
+								<li>
+									<a href="Home3.html">
+										<i class="ri-home-5-line"></i> Home page 3</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a class="color_black" href="Marketplace.html"> Marketplace</a>
+						</li>
+						<li>
+							<a class="color_black" href="Collections.html"> Collections</a>
+						</li>
+						<li>
+							<a class="color_black" href="Profile.html"> Profile</a>
+						</li>
+						<li>
+							<a class="color_black" href="Creators.html"> Creators</a>
+						</li>
+						<li>
+							<a class="color_black" href="kit.html"> Ui Kit </a>
+						</li>
+						<li class="has_popup2">
+							<a class="color_black is_new" href="#">Pages <i class="ri-more-2-fill"></i></a>
+							<ul class="menu__popup2 space-y-20">
+								<div class="row sub_menu_row">
+										
+									<div class="col-lg-6 space-y-10">
+										<!-- =============== -->
+										<li>
+											<a href="Activity.html">
+												<i class="ri-line-chart-line"></i>
+												Activity
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="edit_profile.html">
+												<i class="ri-edit-line"></i>
+												Edit Profile
+											</a>
+										</li>
+										
+										<!-- =============== -->
+										<li>
+											<a href="Item-details.html">
+												<i class="ri-gallery-line"></i>
+												Item details
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="Live_Auctions.html">
+												<i class="ri-auction-line"></i>
+												Live Auctions
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="Upcoming_projects.html">
+												<i class="ri-upload-line"></i>
+												Upcoming projects
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="ranking.html">
+												<i class="ri-funds-line"></i>
+												Ranking
+											</a>
+										</li>
+										
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="newsletter.html">
+												<i class="ri-mail-open-line"></i>
+												Newsletter
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="forum.html">
+												<i class="ri-discuss-line"></i>
+												Forum & community
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="post_details.html">
+												<i class="ri-chat-check-line"></i>
+												Forum details
+											</a>
+										</li>
+										
+										<!-- =============== -->
+										<li>
+											<a href="no_results.html">
+												<i class="ri-file-search-line"></i>
+												No Result
+											</a>
+										</li>
+										
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="Contact.html">
+												<i class="ri-customer-service-2-line"></i>
+												Contact
+											</a>
+										</li>
+										
+									</div>
+										
+										
+										
+										
+										
+										
+										
+									<div class="col-lg-6 space-y-10">
+										
+										<!-- =============== -->
+										<li>
+											<a href="Upload-type.html">
+												<i class="ri-upload-line"></i>
+												Upload Types
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="Connect-wallet.html">
+												<i class="ri-wallet-3-line"></i>
+												Connect wallet
+											</a>
+										</li>
+										
+										<!-- =============== -->
+										<li>
+											<a href="questions.html">
+												<i class="ri-question-line"></i>
+												FAQ
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="Submit_request.html">
+												<i class="ri-share-forward-line"></i>
+												Submit request
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="Submit_request.html">
+												<i class="ri-message-3-line"></i>
+												Request chat
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="blog.html">
+												<i class="ri-layout-line"></i>
+												Blog
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a class="is_new" href="article.html">
+												<i class="ri-newspaper-line"></i>
+												Article
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="register.html">
+												<i class="ri-lock-line"></i>
+												Register
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="login.html">
+												<i class="ri-shield-user-line"></i>
+												Login
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a href="Privacy.html">
+												<i class="ri-file-text-line"></i>
+												Privacy Policy
+											</a>
+										</li>
+										<!-- =============== -->
+										<li>
+											<a c href="404.html">
+												<i class="ri-file-damage-line"></i>
+												404
+											</a>
+										</li>
+									</div>
+								</div>						
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<!-- Search Bar -->
+				<div class="header__search">
+					<input type="text" placeholder="Search" />
+					<button class="header__result">
+						<i class="ri-search-line"></i>
+					</button>
+				</div>
+				<!-- Connect Button -->
+				<div class="header__btns">
+					@{
+                        var buttonClass = "btn-grad btn-small";
+                        if (!_isOnRightNetwork)
+                            buttonClass = "btn-danger btn-small";
+                    }
+					<a class="btn @buttonClass" @onclick="ConnectWallet">
+						<i class="ri-wallet-3-line"></i>
+						@_address
+					</a>
+				</div>
+				<div class="header__burger js-header-burger"></div>
+			
+				<div class="header__mobile js-header-mobile">
+					<div class="header__mobile__menu space-y-40">
+						<ul class="d-flex space-y-20">
+							<li> <a class="color_black" href="Marketplace.html"> Marketplace</a> </li>
+							<li> <a class="color_black" href="Collections.html"> Collections</a> </li>
+							<li> <a class="color_black" href="Profile.html"> Profile</a> </li>
+							<li> <a class="color_black" href="Creators.html"> Creators</a> </li>
+						
+						</ul>
+						<div class="space-y-20">
+							<div class="header__search in_mobile w-full">
+								<input type="text" placeholder="Search" />
+								<button class="header__result">
+									<i class="ri-search-line"></i>
+								</button>
+							</div>
+							<a class="btn btn-grad btn-sm" href="Connect-wallet.html">Connect
+								wallet</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
 </nav>
 
 @code{
-    private string _address { get; set; } = "Connect Wallet";
-    private bool _hasMetamask = false;
-    private bool _isLoading = true;
-    private bool _isSignedIn = false;
-    private bool _isOnRightNetwork = true;
-    private bool _isAdmin = false;
+	private string _address { get; set; } = "Connect Wallet";
+	private bool _hasMetamask = false;
+	private bool _isLoading = true;
+	private bool _isSignedIn = false;
+	private bool _isOnRightNetwork = true;
+	private bool _isAdmin = false;
 
-    private string _query;
+	private string _query;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (await _client.TransactionHandler.IsSiteConnected())
-        {
-            var userAddress = await _client.TransactionHandler.GetSelectedAddress();
-            _isAdmin = await _userService.IsInRole("ADMIN", userAddress);
-            UpdateData();
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		if (await _client.TransactionHandler.IsSiteConnected())
+		{
+			var userAddress = await _client.TransactionHandler.GetSelectedAddress();
+			_isAdmin = await _userService.IsInRole("ADMIN", userAddress);
+			UpdateData();
+		}
+	}
 
-    private async void UpdateData()
-    {
-        _isLoading = true;
-        if (await _metaMaskService.HasMetaMask())
-        {
-            await _metaMaskService.ListenToEvents();
-            MetaMaskService.AccountChangedEvent += AccountChanged;
-            MetaMaskService.ChainChangedEvent += ChainChangedEvent;
-            if (await _metaMaskService.IsSiteConnected())
-            {
-                _isSignedIn = true;
-                var address = await _metaMaskService.GetSelectedAddress();
-                if (await _userService.GetUser(address) == null || (await _userService.GetUser(address)).Name == "")
-                {
-                    _address = address.Substring(0, 5) + "...";
-                }
-                else
-                {
-                    var user = await _userService.GetUser(address);
-                    _address = user.Name;
-                }
-            }
-            else
-            {
-                ConnectWallet();
-            }
-            _hasMetamask = true;
-        }
-        _isLoading = false;
-        StateHasChanged();
-    }
+	private async void UpdateData()
+	{
+		_isLoading = true;
+		if (await _metaMaskService.HasMetaMask())
+		{
+			await _metaMaskService.ListenToEvents();
+			MetaMaskService.AccountChangedEvent += AccountChanged;
+			MetaMaskService.ChainChangedEvent += ChainChangedEvent;
+			if (await _metaMaskService.IsSiteConnected())
+			{
+				_isSignedIn = true;
+				var address = await _metaMaskService.GetSelectedAddress();
+				if (await _userService.GetUser(address) == null || (await _userService.GetUser(address)).Name == "")
+				{
+					_address = address.Substring(0, 5) + "...";
+				}
+				else
+				{
+					var user = await _userService.GetUser(address);
+					_address = user.Name;
+				}
+			}
+			else
+			{
+				ConnectWallet();
+			}
+			_hasMetamask = true;
+		}
+		_isLoading = false;
+		StateHasChanged();
+	}
 
-    private async Task ChainChangedEvent((long, Chain) arg)
-    {
-        int chainToUse = int.Parse(_config["ChainId"]);
-        _isOnRightNetwork = arg.Item1 == chainToUse;
-        StateHasChanged();
-    }
+	private async Task ChainChangedEvent((long, Chain) arg)
+	{
+		int chainToUse = int.Parse(_config["ChainID"]);
+		_isOnRightNetwork = arg.Item1 == chainToUse;
+		StateHasChanged();
+	}
 
-    private async Task AccountChanged(string arg)
-    {
-        _address = await _metaMaskService.GetSelectedAddress();
-        _isSignedIn = true;
-        var chain = await _metaMaskService.GetSelectedChain();
-        _isOnRightNetwork = chain.chainId == long.Parse(_config["ChainId"]);
-        var address = await _metaMaskService.GetSelectedAddress();
-        if (await _userService.GetUser(address) == null || (await _userService.GetUser(address)).Name == "")
-        {
-            _address = address.Substring(0, 7) + "...";
-        }
-        else
-        {
-            var user = await _userService.GetUser(address);
-            _address = user.Name;
-        }
-        StateHasChanged();
-    }
+	private async Task AccountChanged(string arg)
+	{
+		_address = await _metaMaskService.GetSelectedAddress();
+		_isSignedIn = true;
+		var chain = await _metaMaskService.GetSelectedChain();
+		_isOnRightNetwork = chain.chainId == long.Parse(_config["ChainId"]);
+		var address = await _metaMaskService.GetSelectedAddress();
+		if (await _userService.GetUser(address) == null || (await _userService.GetUser(address)).Name == "")
+		{
+			_address = address.Substring(0, 7) + "...";
+		}
+		else
+		{
+			var user = await _userService.GetUser(address);
+			_address = user.Name;
+		}
+		StateHasChanged();
+	}
 
+	private async void ConnectWallet()
+	{
+		await _metaMaskService.ConnectMetaMask();
+		await AccountChanged(null);
+		_navManager.NavigateTo("/account");
+	}
 
-    private async void ConnectWallet()
-    {
-        await _metaMaskService.ConnectMetaMask();
-        await AccountChanged(null);
-        _navManager.NavigateTo("/account");
-    }
+	private void SearchForResults()
+				=> _navManager.NavigateTo("Search/" + _query);
 
-    private void SearchForResults()
-       => _navManager.NavigateTo("Search/" + _query);
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		//<script src="theme-assets/js/swiper-bundle.min.js"></script>
+		//<script src="theme-assets/js/gsap.min.js"></script>
+		//<script src="theme-assets/js/ScrollTrigger.min.js"></script>
+		//<script src="theme-assets/js/sticky-sidebar.js"></script>
+		//<script src="theme-assets/js/script.js"></script>
+		//await _js.InvokeAsync<IJSObjectReference>("import", "./theme-assets/js/gsap.min.js");
+		//await _js.InvokeAsync<IJSObjectReference>("import", "./theme-assets/js/ScrollTrigger.min.js");
+		//await _js.InvokeAsync<IJSObjectReference>("import", "./theme-assets/js/sticky-sidebar.js");
+		//await _js.InvokeAsync<IJSObjectReference>("import", "./theme-assets/js/script.js");
+		//await _js.InvokeVoidAsync("initNavMenu");
+	}
 }
